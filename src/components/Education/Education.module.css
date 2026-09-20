@@ -1,0 +1,49 @@
+/* 역순 연대기(FR-E1)이므로 타임라인으로 구조를 실제로 인코딩한다 */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid var(--color-border);
+}
+
+.item {
+  position: relative;
+  padding: 0 0 var(--space-6) var(--space-6);
+}
+
+.item::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: -6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+
+.item:last-child {
+  padding-bottom: 0;
+}
+
+.itemTitle {
+  font-size: var(--font-size-lg);
+}
+
+.itemMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  margin-top: var(--space-1);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.highlights {
+  margin-top: var(--space-3);
+  padding-left: var(--space-5);
+  max-width: var(--measure);
+  color: var(--color-text);
+}

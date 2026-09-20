@@ -1,8 +1,11 @@
+import shared from '../../styles/shared.module.css'
+import styles from './About.module.css'
+
 function About() {
   return (
-    <section id="about" className="section about">
-      <h2 className="section-heading">About</h2>
-      <div className="about__content">
+    <section id="about" className={shared.section}>
+      <h2 className={shared.sectionHeading}>About</h2>
+      <div className={styles.content}>
         <p>
           프론트엔드 개발자(신입/전환)로서, 이력과 프로젝트, 글을 한 곳에 모아
           방문자가 목적에 따라 필요한 정보만 빠르게 꺼내갈 수 있도록 이 사이트를
