@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>About 시안</title>
+<style>
+  /* ───────────── 와이어프레임 바깥(도구 화면) ───────────── */
+  :root {
+    --chrome-bg: #eef0f3;
+    --chrome-panel: #ffffff;
+    --chrome-text: #14161a;
+    --chrome-muted: #5b6472;
+    --chrome-border: #d5d9e0;
+    --chrome-active: #14161a;
+    --chrome-active-text: #ffffff;
+    --anno: #d93a3f;
+    --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --chrome-bg: #16181d;
+      --chrome-panel: #1e2128;
+      --chrome-text: #e8eaed;
+      --chrome-muted: #9aa1ac;
+      --chrome-border: #2e333c;
+      --chrome-active: #e8eaed;
+      --chrome-active-text: #14161a;
+      --anno: #f0595e;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--chrome-bg);
+    color: var(--chrome-text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.92em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--chrome-bg);
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 12px 16px;
+    background: var(--chrome-panel);
+    border-bottom: 1px solid var(--chrome-border);
+  }
+  .toolbar h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--chrome-border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-right: 1px solid var(--chrome-border);
+    background: transparent;
+    color: var(--chrome-text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--chrome-active); color: var(--chrome-active-text); }
+  .seg button:focus-visible { outline: 2px solid var(--anno); outline-offset: 2px; }
+
+  /* 아래 여백을 넉넉히 둬야 시안 C의 스크롤 채색을 끝까지 볼 수 있다 */
+  .wrap { padding: 20px 16px 60vh; }
+
+  .desc {
+    max-width: 1280px;
+    margin: 0 auto 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--chrome-border);
+    border-radius: 12px;
+    background: var(--chrome-panel);
+  }
+  .desc h2 { margin: 0 0 4px; font-size: 15px; }
+  .desc p { margin: 0 0 8px; color: var(--chrome-muted); }
+  .desc ul { margin: 0; padding-left: 20px; }
+  .desc li + li { margin-top: 2px; }
+
+  .stage {
+    container-type: inline-size;
+    max-width: 1280px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid var(--chrome-border);
+    border-radius: 12px;
+    transition: max-width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .stage[data-size="mobile"] { max-width: 375px; }
+
+  .anno {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px dashed var(--anno);
+    color: var(--anno);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+  }
+  body[data-anno="off"] .anno { display: none; }
+
+  /* ───────────── 사이트 안쪽 — DESIGN.md 토큰 ───────────── */
+  .site {
+    --color-bg: #FFFFFF;
+    --color-surface: #F2F2F2;
+    --color-text: #111111;
+    --color-text-muted: #555555;
+    --color-border: #D2D2D2;
+    --color-border-strong: #111111;
+    --color-accent: #AD522E;
+
+    --font-size-h2: clamp(36px, 4.4cqw, 88px);
+    --font-size-h3: clamp(22px, 1.7cqw, 32px);
+    --font-size-lg: 20px;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-label: 12px;
+
+    --grid-gap: clamp(12px, 1.25cqw, 24px);
+    --gutter: clamp(16px, 3.2cqw, 56px);
+    --section-space: clamp(64px, 8cqw, 160px);
+    --step: clamp(22px, 3.2cqw, 64px);
+    --line: 1px solid var(--color-border);
+    --line-strong: 1px solid var(--color-border-strong);
+
+    --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: background 680ms var(--ease-out-soft), color 680ms var(--ease-out-soft);
+  }
+  .site[data-theme="dark"] {
+    --color-bg: #111111;
+    --color-surface: #191919;
+    --color-text: #FFFFFF;
+    --color-text-muted: #A3A3A3;
+    --color-border: #2E2E2E;
+    --color-border-strong: #FFFFFF;
+    --color-accent: #D97757;
+  }
+
+  .sec {
+    padding: var(--section-space) var(--gutter);
+    border-top: var(--line);
+  }
+
+  /* §7.1 섹션 머리 — 세 시안 공통 */
+  .head {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px var(--grid-gap);
+    margin-bottom: calc(var(--step) * 2);
+  }
+  .label {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .title {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: var(--font-size-h2);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+  .lead {
+    grid-column: 1 / -1;
+    margin: 0;
+    max-width: 70ch;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-lg);
+    line-height: 1.6;
+  }
+  @container (min-width: 1024px) {
+    .head { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .head .title { grid-column: 1 / 8; }
+    .head .lead { grid-column: 8 / 13; align-self: end; }
+  }
+
+  .accent { color: var(--color-accent); }
+  .muted { color: var(--color-text-muted); }
+
+  .txt { margin: 0; font-size: var(--font-size-base); line-height: 1.6; }
+
+  /* 등장 모션(§8.5) 미리보기 */
+  .reveal { clip-path: inset(0); transition: clip-path 620ms var(--ease-out-soft); }
+  .reveal.is-hidden { clip-path: inset(100% 0 0 0); }
+  .rise { transition: transform 800ms var(--ease-out-soft), opacity 800ms var(--ease-out-soft); }
+  .rise.is-hidden { opacity: 0; transform: translateY(28px); }
+
+  /* ═════════════ 시안 A — 3분할 문단 ═════════════ */
+  .a-cols {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 var(--grid-gap);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .a-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 24px 0 40px;
+    border-top: var(--line-strong);
+  }
+  .a-col .meta { display: flex; justify-content: space-between; }
+  .a-col h3 { margin: 0; font-size: var(--font-size-h3); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; }
+  @container (min-width: 1024px) {
+    .a-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .a-col { padding-bottom: 0; }
+  }
+  .a-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px 24px;
+    margin-top: calc(var(--step) * 2);
+    padding-top: 16px;
+    border-top: var(--line);
+  }
+
+  /* ═════════════ 시안 B — 인덱스 표 + 사진 ═════════════ */
+  .b-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px var(--grid-gap);
+  }
+  .b-side { display: flex; flex-direction: column; gap: 16px; }
+  .b-photo {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    max-width: 320px;
+    border: var(--line);
+    background:
+      linear-gradient(to top right, transparent calc(50% - 0.5px), var(--color-border) 50%, transparent calc(50% + 0.5px)),
+      linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--color-border) 50%, transparent calc(50% + 0.5px)),
+      var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+  .b-facts { margin: 0; border-top: var(--line); }
+  .b-facts div { display: flex; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: var(--line); }
+  .b-facts dt { color: var(--color-text-muted); font-size: var(--font-size-label); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; }
+  .b-facts dd { margin: 0; font-size: var(--font-size-sm); text-align: right; }
+
+  .b-rows { margin: 0; padding: 0; list-style: none; border-top: var(--line-strong); }
+  .b-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px var(--grid-gap);
+    padding: 28px 0;
+    border-bottom: var(--line);
+    transition: background 260ms var(--ease-out-expo);
+  }
+  .b-row h3 { margin: 0; font-size: var(--font-size-h3); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; }
+  .b-row .no { font-size: var(--font-size-label); font-weight: 500; letter-spacing: 0.08em; color: var(--color-text-muted); }
+  @container (min-width: 768px) {
+    .b-row { grid-template-columns: 2fr 5fr; }
+    .b-row .txt { grid-column: 2; }
+  }
+  @container (min-width: 1024px) {
+    .b-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .b-side { grid-column: 1 / 5; position: sticky; top: 80px; align-self: start; }
+    .b-main { grid-column: 5 / 13; }
+    .b-row { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+    .b-row .left { grid-column: 1 / 4; }
+    .b-row .txt { grid-column: 4 / 9; }
+  }
+  @media (hover: hover) {
+    .b-row:hover { background: var(--color-surface); }
+  }
+
+  /* ═════════════ 시안 C — 큰 문장 + 스크롤 채색 ═════════════ */
+  .c-statement {
+    margin: 0 0 calc(var(--step) * 2);
+    font-size: clamp(28px, 3.6cqw, 72px);
+    font-weight: 500;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+  }
+  .c-statement .w { color: var(--color-border); transition: color 400ms var(--ease-out-soft); }
+  .c-statement .w.on { color: var(--color-text); }
+  .c-statement .w.on.accent { color: var(--color-accent); }
+  .c-sub {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 32px var(--grid-gap);
+    padding-top: 24px;
+    border-top: var(--line);
+  }
+  .c-sub .item { display: flex; flex-direction: column; gap: 12px; }
+  @container (min-width: 1024px) {
+    .c-wrap { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 var(--grid-gap); }
+    .c-wrap .label-col { grid-column: 1 / 3; position: sticky; top: 80px; align-self: start; }
+    .c-wrap .body-col { grid-column: 3 / 13; }
+    .c-sub { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  .c-wrap .label-col { margin-bottom: 24px; }
+  .c-wrap .label-col .title { font-size: var(--font-size-h3); margin-top: 12px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .rise, .c-statement .w { transition: none; }
+  }
+</style>
+</head>
+<body>
+<header class="toolbar">
+  <h1>About 시안</h1>
+  <div class="seg" role="group" aria-label="시안 고르기">
+    <button type="button" data-set="v" data-val="a" aria-pressed="true">A · 3분할 문단</button>
+    <button type="button" data-set="v" data-val="b" aria-pressed="false">B · 인덱스 표</button>
+    <button type="button" data-set="v" data-val="c" aria-pressed="false">C · 큰 문장</button>
+  </div>
+  <div class="seg" role="group" aria-label="테마">
+    <button type="button" data-set="theme" data-val="light" aria-pressed="true">라이트</button>
+    <button type="button" data-set="theme" data-val="dark" aria-pressed="false">다크</button>
+  </div>
+  <div class="seg" role="group" aria-label="화면 폭">
+    <button type="button" data-set="size" data-val="desktop" aria-pressed="true">데스크톱</button>
+    <button type="button" data-set="size" data-val="mobile" aria-pressed="false">모바일 375</button>
+  </div>
+  <div class="seg" role="group" aria-label="설명 표시">
+    <button type="button" data-set="anno" data-val="on" aria-pressed="true">설명 켜기</button>
+    <button type="button" data-set="anno" data-val="off" aria-pressed="false">끄기</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="desc" id="desc" aria-live="polite"></section>
+
+  <div class="stage" id="stage" data-size="desktop">
+    <div class="site" id="site" data-theme="light">
+
+      <!-- ═════════ 시안 A ═════════ -->
+      <section class="sec" data-v="a" aria-label="시안 A">
+        <div class="head">
+          <p class="label">(01) About <span class="anno">① 섹션 머리 §7.1 — 라벨 / 제목 왼쪽 7열 / 설명 오른쪽 5열</span></p>
+          <h2 class="title reveal">완성한 프로젝트로<br>말합니다</h2>
+          <p class="lead rise">요구사항 정리부터 배포까지, 하나를 끝까지 만드는 프론트엔드 개발자입니다.</p>
+        </div>
+
+        <span class="anno">② 기존 세 문단을 4열씩 3칸에 하나씩 — 굵은 윗선(--line-strong)으로 칸을 나눔</span>
+        <ol class="a-cols">
+          <li class="a-col rise">
+            <div class="meta"><span class="label">01</span><span class="label">Why</span></div>
+            <h3>한 곳에 모은 이유</h3>
+            <p class="txt">이력과 프로젝트, 글을 한 곳에 모아 방문자가 목적에 따라 필요한 정보만 빠르게 꺼내갈 수 있도록 이 사이트를 직접 기획하고 만들었습니다.</p>
+          </li>
+          <li class="a-col rise">
+            <div class="meta"><span class="label">02</span><span class="label">How</span></div>
+            <h3>끝까지 완성하는 방식</h3>
+            <p class="txt">요구사항을 정리하고 설계·구현을 거쳐 성능과 접근성 기준을 충족시키는 과정까지, 하나의 프로젝트를 끝까지 완성하는 데 집중합니다.</p>
+          </li>
+          <li class="a-col rise">
+            <div class="meta"><span class="label">03</span><span class="label">Next</span></div>
+            <h3>계속 채워 가는 사이트</h3>
+            <p class="txt">지금은 이 사이트 자체의 코드 품질과 완성도로 말합니다. 배포는 끝이 아니라 시작이며, 새로운 프로젝트로 계속 채워 나갑니다.</p>
+          </li>
+        </ol>
+
+        <div class="a-foot">
+          <span class="label muted">Frontend Engineer · 2027</span>
+          <span class="label"><span class="accent">→</span> 프로젝트 보러 가기 <span class="anno">③ 다음 섹션 링크(선택)</span></span>
+        </div>
+      </section>
+
+      <!-- ═════════ 시안 B ═════════ -->
+      <section class="sec" data-v="b" aria-label="시안 B" hidden>
+        <div class="head">
+          <p class="label">(01) About</p>
+          <h2 class="title reveal">디자인의 의도를<br>코드로 옮깁니다</h2>
+          <p class="lead rise">신입 · 전환 프론트엔드 개발자. 실무 경력보다 완성한 결과물로 보여 드립니다.</p>
+        </div>
+
+        <div class="b-grid">
+          <aside class="b-side">
+            <span class="anno">① 왼쪽 4열 — 스크롤해도 따라오는 고정 칸 (sticky)</span>
+            <div class="b-photo">프로필 사진 (선택 · 4:5)</div>
+            <span class="anno">② 사진이 없으면 이 칸을 빼고 요약표만 남김 (FR-A2)</span>
+            <dl class="b-facts">
+              <div><dt>Role</dt><dd>Frontend Engineer</dd></div>
+              <div><dt>Focus</dt><dd>React · 접근성 · 성능</dd></div>
+              <div><dt>Status</dt><dd><span class="accent">●</span> 구직 중</dd></div>
+              <div><dt>Base</dt><dd>TODO 지역</dd></div>
+            </dl>
+          </aside>
+
+          <div class="b-main">
+            <span class="anno">③ 오른쪽 8열 — 번호·키워드 / 본문이 한 줄씩 쌓이는 표. 마우스를 올리면 줄 배경이 회색(--color-surface)</span>
+            <ol class="b-rows">
+              <li class="b-row rise">
+                <div class="left"><span class="no">01 — WHY</span><h3>왜 이 일을 하는가</h3></div>
+                <p class="txt">이력과 프로젝트, 글을 한 곳에 모아 방문자가 목적에 따라 필요한 정보만 빠르게 꺼내갈 수 있도록 이 사이트를 직접 기획하고 만들었습니다.</p>
+              </li>
+              <li class="b-row rise">
+                <div class="left"><span class="no">02 — HOW</span><h3>어떻게 일하는가</h3></div>
+                <p class="txt">요구사항을 정리하고 설계·구현을 거쳐 성능과 접근성 기준을 충족시키는 과정까지, 하나의 프로젝트를 끝까지 완성하는 데 집중합니다.</p>
+              </li>
+              <li class="b-row rise">
+                <div class="left"><span class="no">03 — NEXT</span><h3>어디로 가는가</h3></div>
+                <p class="txt">지금은 이 사이트 자체의 코드 품질과 완성도로 말합니다. 배포는 끝이 아니라 시작이며, 새로운 프로젝트로 계속 채워 나갑니다.</p>
+              </li>
+            </ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════ 시안 C ═════════ -->
+      <section class="sec" data-v="c" aria-label="시안 C" hidden>
+        <div class="c-wrap">
+          <div class="label-col">
+            <p class="label">(01) About</p>
+            <h2 class="title">소개</h2>
+            <span class="anno">① 머리를 왼쪽 2열로 작게 접고 고정 — 큰 문장에 자리를 내줌</span>
+          </div>
+
+          <div class="body-col">
+            <span class="anno">② 큰 문장 — 스크롤하면 단어가 연한 회색 → 진한 글자로 차례로 칠해짐 (오렌지 단어 하나만 포인트)</span>
+            <p class="c-statement" id="statement"
+               data-text="실무 경력보다 *완성한 프로젝트*로 말합니다. 요구사항을 정리하고, 설계하고, 성능과 접근성 기준까지 맞춰 하나를 끝까지 만듭니다."></p>
+
+            <span class="anno">③ 나머지 두 문단은 본문 크기로 2칸에</span>
+            <div class="c-sub">
+              <div class="item rise">
+                <span class="label">01 — Why</span>
+                <p class="txt">이력과 프로젝트, 글을 한 곳에 모아 방문자가 목적에 따라 필요한 정보만 빠르게 꺼내갈 수 있도록 이 사이트를 직접 기획하고 만들었습니다.</p>
+              </div>
+              <div class="item rise">
+                <span class="label">02 — Next</span>
+                <p class="txt">지금은 이 사이트 자체의 코드 품질과 완성도로 말합니다. 배포는 끝이 아니라 시작이며, 새로운 프로젝트로 계속 채워 나갑니다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const DESC = {
+    a: {
+      title: '시안 A — 3분할 문단 (투모어스탭)',
+      sub: '지금 있는 세 문단을 그대로 살려 3칸에 하나씩 나눕니다. DESIGN.md의 "3의 리듬"을 가장 곧게 따르는 안입니다.',
+      points: [
+        '장점: 콘텐츠를 거의 바꾸지 않아도 됨. 각 문단에 Why / How / Next 짧은 제목만 붙이면 끝.',
+        '장점: 모바일에서는 세 칸이 위아래로 쌓이기만 해서 구현이 가장 단순함.',
+        '주의: 아래 Projects도 3칸이라 두 섹션 모양이 비슷해 보일 수 있음 → Projects는 계단, About은 평평한 3칸으로 차이를 둠.',
+      ],
+    },
+    b: {
+      title: '시안 B — 인덱스 표 + 요약 (마커빌)',
+      sub: '왼쪽은 사진과 한눈에 보는 요약표(역할·관심 분야·구직 상태), 오른쪽은 1px 선으로 나눈 문단 목록입니다.',
+      points: [
+        '장점: 채용 담당자가 "누구인지 / 지금 구직 중인지"를 요약표에서 3초 만에 확인.',
+        '장점: 사진(FR-A2)을 넣을 자리가 있음. 사진이 없어도 요약표만으로 칸이 채워짐.',
+        '주의: 요약표 내용(지역, 관심 분야 등)을 새로 정해야 함 → src/data/profile.ts에 항목 추가.',
+      ],
+    },
+    c: {
+      title: '시안 C — 큰 문장 + 스크롤 채색',
+      sub: '핵심 한 문장을 제목만큼 크게 쓰고, 스크롤하면 단어가 차례로 칠해집니다. 나머지 문단은 작게 받칩니다.',
+      points: [
+        '장점: 세 안 중 인상이 가장 강함. Hero의 큰 글자와 이어지는 느낌.',
+        '장점: 화면을 스크롤해 보세요 — 문장이 칠해지는 "보너스 인터랙션" 미리보기가 들어 있음.',
+        '주의: 움직임 줄이기 설정이면 처음부터 모두 칠해진 상태로 보여야 함(§8.5). 문장 하나에 메시지를 압축해야 해서 글 다듬기가 필요.',
+      ],
+    },
+  }
+
+  const site = document.getElementById('site')
+  const stage = document.getElementById('stage')
+  const descEl = document.getElementById('desc')
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const state = {
+    v: 'a',
+    theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    size: 'desktop',
+    anno: 'on',
+  }
+
+  function renderDesc() {
+    const d = DESC[state.v]
+    descEl.innerHTML = `<h2>${d.title}</h2><p>${d.sub}</p><ul>${d.points.map((p) => `<li>${p}</li>`).join('')}</ul>`
+  }
+
+  function apply() {
+    document.querySelectorAll('[data-set]').forEach((b) => b.setAttribute('aria-pressed', String(state[b.dataset.set] === b.dataset.val)))
+    document.querySelectorAll('.sec[data-v]').forEach((s) => (s.hidden = s.dataset.v !== state.v))
+    site.dataset.theme = state.theme
+    stage.dataset.size = state.size
+    document.body.dataset.anno = state.anno
+    renderDesc()
+    playReveal()
+    paintStatement()
+  }
+
+  document.querySelector('.toolbar').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-set]')
+    if (!b) return
+    state[b.dataset.set] = b.dataset.val
+    apply()
+  })
+
+  // 등장 모션: 시안을 바꿀 때마다 다시 재생 (실제 사이트에서는 화면에 들어올 때 한 번만)
+  function playReveal() {
+    if (reduce) return
+    const sec = document.querySelector(`.sec[data-v="${state.v}"]`)
+    const items = sec.querySelectorAll('.reveal, .rise')
+    items.forEach((el) => el.classList.add('is-hidden'))
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      items.forEach((el, i) => {
+        el.style.transitionDelay = `${i * 100}ms`
+        el.classList.remove('is-hidden')
+      })
+    }))
+  }
+
+  // 시안 C: 문장을 단어로 쪼개고, 화면 높이 60% 지점을 지난 단어부터 칠한다
+  const statement = document.getElementById('statement')
+  let accentOn = false
+  statement.innerHTML = statement.dataset.text
+    .split(' ')
+    .map((word) => {
+      if (word.startsWith('*')) accentOn = true
+      const html = `<span class="w${accentOn ? ' accent' : ''}">${word.replace(/\*/g, '')}</span>`
+      if (word.includes('*') && (word.endsWith('*') || /\*[^*]*$/.test(word.slice(1)))) accentOn = false
+      return html
+    })
+    .join(' ')
+  const words = statement.querySelectorAll('.w')
+
+  function paintStatement() {
+    if (state.v !== 'c') return
+    const line = innerHeight * 0.6
+    words.forEach((w) => w.classList.toggle('on', reduce || w.getBoundingClientRect().top < line))
+  }
+  addEventListener('scroll', paintStatement, { passive: true })
+  addEventListener('resize', paintStatement)
+
+  apply()
+</script>
+</body>
+</html>
