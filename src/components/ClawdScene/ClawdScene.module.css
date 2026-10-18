@@ -1,0 +1,12 @@
+.canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity var(--motion-slow);
+}
+
+/* 첫 프레임을 그린 뒤에 나타나 빈 캔버스가 깜빡이지 않게 한다 */
+.canvas[data-ready='true'] {
+  opacity: 1;
+}

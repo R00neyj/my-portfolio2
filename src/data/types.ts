@@ -1,5 +1,12 @@
 // 콘텐츠 데이터 모델 — docs/요구사항.md §6
 
+export interface Profile {
+  name: string
+  role: string
+  year: string
+  tagline: string[]
+}
+
 export interface SkillCategory {
   category: string
   items: string[]

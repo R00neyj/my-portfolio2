@@ -168,6 +168,7 @@
     --color-text-muted: #475569;
     --color-border: #E2E4E9;
     --color-accent: #4F46E5;
+    --color-mascot: #D97757;
 
     --font-size-sm: 14px;
     --font-size-base: 16px;
@@ -298,6 +299,32 @@
     flex-direction: column;
     justify-content: center;
     padding-block: var(--space-7) var(--space-5);
+  }
+
+  /* ⑦ 3D 배경 (Claw'd) — 텍스트 뒤에 깔리는 장식. 클릭을 가로채지 않습니다
+     아래 .anno { position: relative }에 덮이지 않도록 선택자를 한 단계 더 구체적으로 씁니다.
+     (덮이면 캔버스가 Hero 높이를 밀어 올리고 → 다시 커지는 무한 반복이 생깁니다) */
+  .hero > .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .hero-bg canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.6s ease-out;
+  }
+  .hero-bg canvas.is-ready { opacity: 1; }
+  .hero-inner, .scroll-area { position: relative; z-index: 1; }
+  .show-notes .hero-bg.anno { outline: none; }
+  .hero-bg.anno::before {
+    top: calc(8px / var(--scale, 1));
+    right: calc(8px / var(--scale, 1));
+    left: auto;
+    transform: none;
   }
 
   /* ① 라벨 */
@@ -472,6 +499,9 @@
 
           <main>
             <section class="hero anno anno--inset" id="hero" data-n="6" aria-labelledby="hero-title">
+              <div class="hero-bg anno" data-n="7" aria-hidden="true">
+                <canvas id="hero-canvas"></canvas>
+              </div>
               <div class="hero-inner container">
                 <div class="anno" data-n="1">
                   <p class="hero-label">이름 · Frontend Engineer</p>
@@ -579,6 +609,20 @@
             <ul>
               <li><code>min-height: calc(100svh - 헤더 높이)</code></li>
               <li>스크롤하지 않아도 ①~④가 모두 첫 화면에 보여야 합니다</li>
+            </ul>
+          </div>
+        </li>
+        <li>
+          <span class="num" aria-hidden="true">7</span>
+          <div>
+            <h3>3D 배경 <span class="ref">신규 · §8 재검토 필요</span></h3>
+            <ul>
+              <li>Claude Code 캐릭터 Claw'd를 three.js로 구현 (<code>docs/logo_ref</code>)</li>
+              <li>반투명 젤리 재질 + 림 라이트. 천천히 떠다니고, 포인터를 따라 몸을 돌리고, 가끔 눈을 깜빡입니다</li>
+              <li>넓은 화면은 오른쪽 위, 좁은 화면은 제목 위쪽에 놓입니다</li>
+              <li>클릭하면 눈이 <code>^ ^</code>로 바뀌고 볼이 붉어지며 웅크렸다가 통통 튀어오릅니다. 마우스를 올리면 손가락 커서로 바뀝니다 (숨은 재미 요소라 키보드 조작은 두지 않습니다)</li>
+              <li>장식이라 <code>aria-hidden</code>이고 클릭을 막지 않습니다. 동작 줄이기 설정이면 멈춘 화면 한 장만 그리고, 클릭해도 튀어오르지 않고 웃기만 합니다</li>
+              <li>캔버스 배경색이 <code>--color-bg</code>와 같아서 테마를 바꾸면 함께 바뀝니다</li>
             </ul>
           </div>
         </li>
@@ -738,6 +782,315 @@
 
   window.addEventListener('resize', layout);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+</script>
+
+<!-- ⑦ 3D 배경: three.js로 Claw'd를 그립니다. 인터넷이 끊기면 배경만 빠지고 나머지는 그대로 보입니다. -->
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+    }
+  }
+</script>
+<script type="module">
+  import * as THREE from 'three';
+  import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+  import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+  const device = document.getElementById('device');
+  const hero = device.querySelector('.hero');
+  const canvas = document.getElementById('hero-canvas');
+  const motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power' });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.toneMapping = THREE.NeutralToneMapping;
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
+  camera.position.set(0, 0, 32);
+
+  // 유리·젤리 재질이 비칠 주변 환경 (반사 하이라이트용)
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.2);
+  keyLight.position.set(-6, 10, 8);
+  const rimLight = new THREE.DirectionalLight(0xffd9c7, 3);
+  rimLight.position.set(8, 3, -6);
+  const hemiLight = new THREE.HemisphereLight(0xffffff, 0x3a1d16, 0.6);
+  scene.add(keyLight, rimLight, hemiLight);
+
+  // ── 텍스처: 프로스트 유리의 미세한 오돌토돌함 / 발광 / 바닥 그림자 ──
+  function canvasTexture(size, paint) {
+    const c = document.createElement('canvas');
+    c.width = c.height = size;
+    paint(c.getContext('2d'), size);
+    return new THREE.CanvasTexture(c);
+  }
+
+  const grainTexture = canvasTexture(128, (ctx, size) => {
+    const img = ctx.createImageData(size, size);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = 110 + Math.random() * 40;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+  });
+  grainTexture.wrapS = grainTexture.wrapT = THREE.RepeatWrapping;
+  grainTexture.repeat.set(3, 3);
+
+  const radialTexture = canvasTexture(256, (ctx, size) => {
+    const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.45, 'rgba(255,255,255,0.35)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, size, size);
+  });
+
+  // ── 재질 ──
+  const mascot = new THREE.Color('#D97757');
+  const bodyMaterial = new THREE.MeshPhysicalMaterial({
+    color: mascot,
+    roughness: 0.32,
+    transmission: 0.55,
+    thickness: 2.5,
+    ior: 1.42,
+    attenuationColor: new THREE.Color('#B8452A'),
+    attenuationDistance: 3,
+    clearcoat: 0.7,
+    clearcoatRoughness: 0.3,
+    sheen: 0.6,
+    sheenRoughness: 0.5,
+    sheenColor: new THREE.Color('#FFD8C4'),
+    bumpMap: grainTexture,
+    bumpScale: 0.6,
+  });
+  const eyeMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x0b0b0d,
+    roughness: 0.12,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
+  });
+
+  // ── Claw'd: 픽셀 스프라이트 1칸 = 1 단위로 돌출 ──
+  // 몸통 8×5.6, 팔 2×2, 눈 1×1, 다리 0.9×2.4 × 4개 (스프라이트처럼 한 줄)
+  const anchor = new THREE.Group();   // 화면 안 위치·크기
+  const crab = new THREE.Group();     // 회전·애니메이션
+  anchor.add(crab);
+  scene.add(anchor);
+
+  function part(geometry, material, x, y, z) {
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, z);
+    crab.add(mesh);
+    return mesh;
+  }
+
+  part(new RoundedBoxGeometry(8, 5.6, 3.8, 5, 0.55), bodyMaterial, 0, 1.05, 0);
+  const armGeometry = new RoundedBoxGeometry(2.2, 2, 2.4, 4, 0.45);
+  const arms = [-1, 1].map((s) => part(armGeometry, bodyMaterial, s * 4.95, 0.85, 0));
+  const legGeometry = new RoundedBoxGeometry(0.9, 2.4, 1.8, 3, 0.3);
+  const legs = [-2.75, -1.25, 1.25, 2.75].map((x) => part(legGeometry, bodyMaterial, x, -2.65, 0));
+  const eyeGeometry = new RoundedBoxGeometry(1, 1, 0.44, 3, 0.12);
+  const eyes = [-1, 1].map((s) => part(eyeGeometry, eyeMaterial, s * 2.5, 2.35, 1.95));
+
+  // 웃는 눈(^ ^): 막대 두 개를 기울여 붙입니다. 평소에는 크기를 0에 가깝게 숨겨 둡니다
+  const smileBarGeometry = new RoundedBoxGeometry(0.75, 0.24, 0.3, 2, 0.1);
+  const smileEyes = [-1, 1].map((s) => {
+    const group = new THREE.Group();
+    [-1, 1].forEach((side) => {
+      const bar = new THREE.Mesh(smileBarGeometry, eyeMaterial);
+      bar.position.x = side * 0.25;
+      bar.rotation.z = -side * 0.75;
+      group.add(bar);
+    });
+    group.position.set(s * 2.5, 2.25, 2.0);
+    group.scale.setScalar(0.001);
+    crab.add(group);
+    return group;
+  });
+
+  // 볼 홍조: 웃을 때만 나타납니다
+  const blushMaterial = new THREE.MeshBasicMaterial({
+    map: radialTexture, color: 0xff6f6f, transparent: true, opacity: 0, depthWrite: false,
+  });
+  const blushGeometry = new THREE.PlaneGeometry(1.6, 0.9);
+  [-1, 1].forEach((s) => part(blushGeometry, blushMaterial, s * 2.9, 1.3, 1.93));
+
+  // 뒤쪽 발광, 바닥 그림자 (회전하지 않도록 anchor에 붙입니다)
+  const glow = new THREE.Mesh(
+    new THREE.PlaneGeometry(26, 20),
+    new THREE.MeshBasicMaterial({ map: radialTexture, color: mascot, transparent: true, depthWrite: false })
+  );
+  glow.position.z = -6;
+  const shadow = new THREE.Mesh(
+    new THREE.PlaneGeometry(12, 1.6),
+    new THREE.MeshBasicMaterial({ map: radialTexture, color: 0x000000, transparent: true, depthWrite: false })
+  );
+  shadow.position.set(0, -4.9, 0);
+  anchor.add(glow, shadow);
+
+  // ── 테마 ──
+  let needsRender = true;
+  function applyTheme() {
+    const style = getComputedStyle(device);
+    scene.background = new THREE.Color(style.getPropertyValue('--color-bg').trim());
+    const isDark = device.dataset.theme === 'dark';
+    glow.material.opacity = isDark ? 0.4 : 0.22;
+    shadow.material.color.set(isDark ? mascot : 0x000000);
+    shadow.material.opacity = isDark ? 0.35 : 0.16;
+    rimLight.intensity = isDark ? 4.5 : 3;
+    renderer.toneMappingExposure = isDark ? 1.05 : 1;
+    needsRender = true;
+  }
+
+  // ── 배치: 넓은 화면은 오른쪽 위, 좁은 화면은 제목 위쪽 ──
+  function resize() {
+    // 안전장치: 혹시 크기가 폭주해도 GPU 한도를 넘지 않게 자릅니다
+    const w = Math.min(hero.clientWidth, 2560);
+    const h = Math.min(hero.clientHeight, 2560);
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+
+    const visH = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+    const visW = visH * camera.aspect;
+    if (camera.aspect >= 1) {
+      anchor.position.set(visW * 0.25, visH * 0.13, 0);
+      anchor.scale.setScalar(Math.min((visH * 0.4) / 8, (visW * 0.34) / 12));
+    } else {
+      anchor.position.set(visW * 0.1, visH * 0.31, 0);
+      anchor.scale.setScalar((visW * 0.55) / 12);
+    }
+    needsRender = true;
+  }
+
+  // ── 포인터를 따라 몸을 돌립니다 ──
+  const pointer = { x: 0, y: 0, tx: 0, ty: 0 };
+  device.addEventListener('pointermove', (e) => {
+    const r = hero.getBoundingClientRect();
+    pointer.tx = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1, 1);
+    pointer.ty = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1, 1);
+  });
+
+  // ── 클릭 반응: 웃으면서 통통 튀어오르기 ──
+  const JUMP_DURATION = 1.25;   // 웅크리기 → 점프 → 착지 → 작은 되튐
+  const SMILE_HOLD = 1.9;       // 웃는 얼굴 유지 시간
+  const NO_JUMP = { y: 0, stretch: 0, arm: 0 };
+  let reactStart = -Infinity;
+  const nowSec = () => performance.now() / 1000;
+  const isReacting = () => nowSec() - reactStart < SMILE_HOLD + 0.4;
+
+  // y: 높이, stretch: +면 위아래로 늘어남 / -면 눌림, arm: 팔 들어 올림
+  function jumpAt(r) {
+    if (r < 0 || r > JUMP_DURATION) return NO_JUMP;
+    if (r < 0.12) {                           // 1) 웅크리기
+      const k = Math.sin((r / 0.12) * Math.PI / 2);
+      return { y: -0.35 * k, stretch: -0.16 * k, arm: -0.2 * k };
+    }
+    if (r < 0.66) {                           // 2) 점프: 오를 때 늘어나고 내려오며 눌림
+      const u = (r - 0.12) / 0.54;
+      return { y: 2.8 * Math.sin(Math.PI * u), stretch: 0.14 * Math.cos(Math.PI * u), arm: 0.7 * Math.sin(Math.PI * u) };
+    }
+    if (r < 0.84) {                           // 3) 착지: 한 번 더 찌그러졌다 돌아옴
+      const v = (r - 0.66) / 0.18;
+      return { y: 0, stretch: -0.14 * (1 - v) - 0.08 * Math.sin(Math.PI * v), arm: 0 };
+    }
+    const w = (r - 0.84) / (JUMP_DURATION - 0.84); // 4) 작은 되튐
+    return { y: 0.7 * Math.sin(Math.PI * w), stretch: 0.04 * Math.sin(Math.PI * w), arm: 0.25 * Math.sin(Math.PI * w) };
+  }
+
+  function smileAt(r) {
+    if (r < 0) return 0;
+    return Math.min(1, r / 0.12) * (1 - THREE.MathUtils.smoothstep(r, SMILE_HOLD, SMILE_HOLD + 0.25));
+  }
+
+  function pose(t, still) {
+    if (!still) {
+      pointer.x += (pointer.tx - pointer.x) * 0.05;
+      pointer.y += (pointer.ty - pointer.y) * 0.05;
+    }
+    const px = still ? 0 : pointer.x;
+    const py = still ? 0 : pointer.y;
+
+    // 동작 줄이기 설정이면 튀어오르지 않고 웃기만 합니다
+    const r = nowSec() - reactStart;
+    const jump = still ? NO_JUMP : jumpAt(r);
+    const smile = smileAt(r);
+
+    crab.rotation.y = -0.42 + Math.sin(t * 0.45) * 0.28 + px * 0.45;
+    crab.rotation.x = 0.28 + Math.sin(t * 0.33) * 0.05 + py * 0.18;
+    // 클릭 전에는 r이 Infinity라 sin(r)이 NaN이 되므로, 웃는 동안에만 계산합니다
+    crab.rotation.z = !still && smile > 0 ? Math.sin(r * 9) * 0.06 * smile : 0;
+    const bob = Math.sin(t * 1.3) * 0.22;
+    crab.position.y = bob + jump.y;
+    shadow.scale.setScalar((1 - bob * 0.15) * (1 - jump.y * 0.1));
+
+    // 젤리처럼 살짝 눌렸다 늘어납니다
+    const squash = Math.sin(t * 2.6) * 0.018 + jump.stretch;
+    crab.scale.set(1 - squash * 0.6, 1 + squash, 1 - squash * 0.6);
+
+    arms[0].position.y = 0.85 + Math.sin(t * 2) * 0.12 + jump.arm;
+    arms[1].position.y = 0.85 - Math.sin(t * 2) * 0.12 + jump.arm;
+    legs.forEach((leg, i) => {
+      leg.position.y = -2.65 + Math.max(0, Math.sin(t * 3 + i * 1.7)) * 0.08;
+    });
+
+    // 4.2초마다 깜빡. 웃는 동안에는 네모 눈 대신 ^ ^ 눈과 홍조를 보여 줍니다
+    const b = t % 4.2;
+    const closed = THREE.MathUtils.smoothstep(b, 0, 0.07) * (1 - THREE.MathUtils.smoothstep(b, 0.1, 0.2));
+    eyes.forEach((eye) => { eye.scale.y = Math.max(0.001, (1 - closed * 0.9) * (1 - smile)); });
+    smileEyes.forEach((eye) => eye.scale.setScalar(Math.max(0.001, smile)));
+    blushMaterial.opacity = smile * 0.55;
+  }
+
+  // 클릭한 곳에 Claw'd가 있는지 광선을 쏘아 확인합니다 (캔버스는 클릭을 받지 않으므로)
+  const raycaster = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  function hitsClawd(e) {
+    const r = canvas.getBoundingClientRect();
+    ndc.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+    raycaster.setFromCamera(ndc, camera);
+    return raycaster.intersectObject(crab, true).length > 0;
+  }
+
+  hero.addEventListener('click', (e) => {
+    if (e.target.closest('a, button') || !hitsClawd(e)) return;
+    // 점프 중에 또 누르면 무시하고, 착지한 뒤에는 다시 튀어오릅니다
+    if (nowSec() - reactStart > JUMP_DURATION) reactStart = nowSec();
+  });
+
+  hero.addEventListener('pointermove', (e) => {
+    hero.style.cursor = !e.target.closest('a, button') && hitsClawd(e) ? 'pointer' : '';
+  });
+
+  const isStill = () => motionQuery.matches || device.classList.contains('reduce-motion');
+  const clock = new THREE.Clock();
+
+  function loop() {
+    requestAnimationFrame(loop);
+    const still = isStill();
+    if (still && !needsRender && !isReacting()) return;
+    pose(still ? 0 : clock.getElapsedTime(), still);
+    renderer.render(scene, camera);
+    needsRender = false;
+    canvas.classList.add('is-ready');
+  }
+
+  // 화면 크기 버튼·테마 버튼·동작 줄이기 체크를 모두 따라갑니다
+  new ResizeObserver(resize).observe(hero);
+  new MutationObserver(applyTheme).observe(device, { attributes: true, attributeFilter: ['data-theme', 'class'] });
+  motionQuery.addEventListener('change', () => { needsRender = true; });
+
+  applyTheme();
+  resize();
+  loop();
 </script>
 </body>
 </html>
