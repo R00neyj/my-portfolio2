@@ -52,6 +52,8 @@
   /* DS5 — 모션 */
   --motion-fast: 200ms ease-out;
   --motion-slow: 400ms ease-out;
+  /* Projects 카드 이미지 호버 — 빠르게 시작해 천천히 멈춤 (docs/ref.md 투모어스탭) */
+  --motion-reveal: 800ms cubic-bezier(0.2, 0.8, 0.2, 1);
 
   color-scheme: light dark;
 }

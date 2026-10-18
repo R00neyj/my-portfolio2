@@ -1,105 +1,188 @@
+import { useEffect, useRef, useState } from 'react'
 import { ExternalLink as ExternalLinkIcon, Image as ImageIcon } from 'lucide-react'
-import { projects } from '../../data/projects'
+import { projectCategories, projects } from '../../data/projects'
+import type { ProjectCategory } from '../../data/types'
 import shared from '../../styles/shared.module.css'
 import styles from './Projects.module.css'
 
+type Filter = ProjectCategory | '전체'
+
+// '전체' 칩에서 한 번에 보여 줄 작업물 수 — 넘치면 '더보기' 버튼으로 이어서 보여 준다
+const PAGE_SIZE = 6
+
 function Projects() {
+  const [selected, setSelected] = useState<Filter>('전체')
+  const [limit, setLimit] = useState(PAGE_SIZE)
+  const listRef = useRef<HTMLUListElement>(null)
+  // '더보기'로 새로 나타난 첫 카드에 포커스를 옮기기 위한 위치
+  const focusIndex = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (focusIndex.current === null) return
+    const item = listRef.current?.children[focusIndex.current]
+    item?.querySelector('article')?.focus()
+    focusIndex.current = null
+  }, [limit])
+
+  // 작업물이 없는 분류는 칩을 만들지 않는다
+  const filters = [
+    { name: '전체' as Filter, count: projects.length },
+    ...projectCategories.map((name) => ({
+      name,
+      count: projects.filter((project) => project.category === name).length,
+    })),
+  ].filter((filter) => filter.count > 0)
+
+  const visible =
+    selected === '전체'
+      ? projects
+      : projects.filter((project) => project.category === selected)
+  const shown = selected === '전체' ? visible.slice(0, limit) : visible
+  const remaining = visible.length - shown.length
+
+  function selectFilter(name: Filter) {
+    setSelected(name)
+    setLimit(PAGE_SIZE)
+  }
+
+  function showMore() {
+    focusIndex.current = limit
+    setLimit(limit + PAGE_SIZE)
+  }
+
   return (
     <section id="projects" className={shared.section}>
       <h2 className={shared.sectionHeading}>Projects</h2>
-      <ul className={styles.list}>
-        {projects.map((project) => (
+
+      <div className={styles.chips} role="group" aria-label="프로젝트 분류">
+        {filters.map(({ name, count }) => (
+          <button
+            key={name}
+            type="button"
+            className={styles.chip}
+            aria-pressed={selected === name}
+            onClick={() => selectFilter(name)}
+          >
+            {name}
+            <span className={styles.chipCount}>{count}</span>
+          </button>
+        ))}
+      </div>
+      <p className={styles.status} aria-live="polite">
+        {selected} · {visible.length}개 작업물
+        {remaining > 0 && ` 중 ${shown.length}개 표시`}
+      </p>
+
+      <ul ref={listRef} className={styles.list}>
+        {shown.map((project) => (
           <li key={project.slug}>
-            <article className={styles.card}>
-              {project.thumbnail ? (
-                <img
-                  src={project.thumbnail}
-                  alt={`${project.title} 스크린샷`}
-                  className={styles.thumbnailImage}
-                  loading="lazy"
-                  width={640}
-                  height={360}
-                />
-              ) : (
-                <div className={styles.thumbnail} aria-hidden="true">
-                  <ImageIcon size={32} strokeWidth={1.5} />
-                </div>
-              )}
+            <article className={styles.card} tabIndex={-1}>
+              <div className={styles.thumbnail}>
+                {project.thumbnail ? (
+                  <img
+                    src={project.thumbnail}
+                    alt={`${project.title} 이미지`}
+                    className={styles.thumbnailImage}
+                    loading="lazy"
+                    width={640}
+                    height={500}
+                  />
+                ) : (
+                  <ImageIcon size={32} strokeWidth={1.5} aria-hidden="true" />
+                )}
+              </div>
+
+              <p className={styles.meta}>
+                <span>{project.category}</span>
+                <span>
+                  {project.period.start} – {project.period.end ?? '진행 중'}
+                </span>
+              </p>
 
               <div className={styles.body}>
                 <h3 className={styles.title}>{project.title}</h3>
                 <p className={styles.tagline}>{project.tagline}</p>
-                <p className={styles.meta}>
-                  <span>
-                    {project.period.start} – {project.period.end ?? '진행 중'}
-                  </span>
-                  <span>{project.role}</span>
-                </p>
 
-                <p className={styles.field}>
-                  <span className={styles.fieldLabel}>문제</span>
-                  {project.problem}
-                </p>
+                {project.stack.length > 0 && (
+                  <p className={styles.stack}>{project.stack.join(' · ')}</p>
+                )}
 
-                <div>
-                  <span className={styles.fieldLabel}>기술적 선택과 이유</span>
-                  <ul className={styles.decisions}>
-                    {project.decisions.map((decision) => (
-                      <li key={decision}>{decision}</li>
-                    ))}
-                  </ul>
-                </div>
+                {project.problem && (
+                  <details className={styles.details}>
+                    <summary className={styles.summary}>자세히 보기</summary>
+                    <div className={styles.detailsBody}>
+                      <p className={styles.field}>
+                        <span className={styles.fieldLabel}>역할</span>
+                        {project.role}
+                      </p>
+                      <p className={styles.field}>
+                        <span className={styles.fieldLabel}>문제</span>
+                        {project.problem}
+                      </p>
+                      {project.decisions && (
+                        <div>
+                          <span className={styles.fieldLabel}>기술적 선택과 이유</span>
+                          <ul className={styles.bullets}>
+                            {project.decisions.map((decision) => (
+                              <li key={decision}>{decision}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      {project.outcome && (
+                        <div>
+                          <span className={styles.fieldLabel}>결과</span>
+                          <ul className={styles.bullets}>
+                            {project.outcome.map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                )}
 
-                <div>
-                  <span className={styles.fieldLabel}>결과</span>
-                  <ul className={styles.outcome}>
-                    {project.outcome.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <ul className={styles.stack}>
-                  {project.stack.map((tech) => (
-                    <li key={tech} className={styles.stackItem}>
-                      {tech}
-                    </li>
-                  ))}
-                </ul>
-
-                <p className={styles.links}>
-                  {project.links.demo ? (
-                    <a
-                      href={project.links.demo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.link}
-                    >
-                      <ExternalLinkIcon size={16} aria-hidden="true" />
-                      데모 보기
-                    </a>
-                  ) : (
-                    <span className={styles.linkDisabled}>데모: 준비 중</span>
-                  )}
-                  {project.links.repo ? (
-                    <a
-                      href={project.links.repo}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.link}
-                    >
-                      <ExternalLinkIcon size={16} aria-hidden="true" />
-                      소스 코드
-                    </a>
-                  ) : (
-                    <span className={styles.linkDisabled}>소스 코드: 준비 중</span>
-                  )}
-                </p>
+                {(project.links.demo || project.links.repo) && (
+                  <p className={styles.links}>
+                    {project.links.demo && (
+                      <a
+                        href={project.links.demo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.link}
+                      >
+                        데모 보기
+                        <ExternalLinkIcon size={14} aria-hidden="true" />
+                      </a>
+                    )}
+                    {project.links.repo && (
+                      <a
+                        href={project.links.repo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={styles.link}
+                      >
+                        소스 코드
+                        <ExternalLinkIcon size={14} aria-hidden="true" />
+                      </a>
+                    )}
+                  </p>
+                )}
               </div>
             </article>
           </li>
         ))}
       </ul>
+
+      {remaining > 0 && (
+        <div className={styles.moreWrap}>
+          <button type="button" className={styles.more} onClick={showMore}>
+            더보기
+            <span className={styles.moreCount}>+{remaining}</span>
+          </button>
+        </div>
+      )}
     </section>
   )
 }

@@ -1,30 +1,120 @@
-/* FR-P7: 고정 3열 대신 auto-fit — 항목이 1~2개면 자연스럽게 넓은 카드 1열이 된다 */
+/*
+ * 시안 A(docs/wireframe/projects_cards.html) — 투모어스탭 참고
+ * 3열 카드가 오른쪽으로 갈수록 한 칸씩 올라가는 계단 배치, 각진 이미지.
+ */
+
+/* ───── 분류 칩 ───── */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-5);
+  margin-bottom: var(--space-2);
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--color-text-muted);
+  font: inherit;
+  cursor: pointer;
+  transition: color var(--motion-fast), border-color var(--motion-fast);
+}
+
+.chip:hover {
+  color: var(--color-text);
+}
+
+.chip[aria-pressed='true'] {
+  color: var(--color-text);
+  border-bottom-color: var(--color-text);
+}
+
+.chipCount {
+  margin-left: 2px;
+  font-size: 11px;
+  vertical-align: super;
+}
+
+.status {
+  margin-bottom: var(--space-7);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+/* ───── 카드 목록 — 3분할 + 계단 ───── */
 .list {
+  --step: clamp(22px, 3.2vw, 64px); /* 계단 1칸 높이 */
+
   list-style: none;
   margin: 0;
   padding: 0;
   display: grid;
-  gap: var(--space-6);
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-8) var(--space-6);
+  align-items: start;
 }
 
+.list > li:nth-child(3n + 1) {
+  margin-top: calc(var(--step) * 2);
+}
+
+.list > li:nth-child(3n + 2) {
+  margin-top: var(--step);
+}
+
+/* 태블릿: 2열, 짝수 카드만 내려 엇갈리게 */
+@media (max-width: 1000px) {
+  .list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .list > li:nth-child(n) {
+    margin-top: 0;
+  }
+
+  .list > li:nth-child(even) {
+    margin-top: calc(var(--step) * 2);
+  }
+}
+
+/* 모바일: 1열, 왼쪽 여백을 2칸 → 1칸 → 0으로 줄여 세로 계단 */
+@media (max-width: 600px) {
+  .list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-7);
+  }
+
+  .list > li:nth-child(n) {
+    margin-top: 0;
+  }
+
+  .list > li:nth-child(3n + 1) {
+    margin-left: calc(var(--step) * 2);
+  }
+
+  .list > li:nth-child(3n + 2) {
+    margin-left: var(--step);
+  }
+}
+
+/* ───── 카드 ───── */
 .card {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
+  gap: var(--space-4);
 }
 
 .thumbnail {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 180px;
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-bg);
+  aspect-ratio: 1.278; /* 약 4:3 */
+  overflow: hidden;
+  background: var(--color-surface);
   color: var(--color-text-muted);
 }
 
@@ -32,77 +122,96 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform var(--motion-reveal);
+}
+
+.card:hover .thumbnailImage {
+  transform: scale(1.05);
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  font-size: 12px;
+  letter-spacing: 0.04em;
 }
 
 .body {
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-5);
+  gap: var(--space-2);
 }
 
 .title {
-  font-size: var(--font-size-lg);
+  font-size: clamp(20px, 1.6vw, 28px);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.3;
 }
 
-.meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+.tagline {
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: 1.65;
+}
+
+.stack {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+/* ───── 자세히 보기(접기/펼치기) ───── */
+.details {
+  margin-top: var(--space-1);
+}
+
+.summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.detailsBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
   font-size: var(--font-size-sm);
 }
 
-.tagline,
 .field {
-  max-width: var(--measure);
   color: var(--color-text);
 }
 
 .fieldLabel {
   display: block;
   margin-bottom: var(--space-1);
-  font-size: var(--font-size-sm);
+  font-size: 12px;
   font-weight: var(--font-weight-medium);
   color: var(--color-text-muted);
 }
 
-.decisions,
-.outcome {
+.bullets {
   padding-left: var(--space-5);
-  max-width: var(--measure);
   color: var(--color-text);
 }
 
-.decisions li + li,
-.outcome li + li {
+.bullets li + li {
   margin-top: var(--space-2);
 }
 
-.stack {
-  list-style: none;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  padding: 0;
-  margin: 0;
-}
-
-.stackItem {
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-bg);
-  font-size: var(--font-size-sm);
-  color: var(--color-text);
-}
-
+/* ───── 링크 ───── */
 .links {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-4);
-  margin-top: auto;
-  padding-top: var(--space-2);
 }
 
 .link {
@@ -110,18 +219,48 @@
   align-items: center;
   gap: var(--space-1);
   min-height: 44px;
-  color: var(--color-accent);
-  font-weight: var(--font-weight-semibold);
-  text-decoration: none;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 .link:hover {
-  text-decoration: underline;
+  color: var(--color-accent);
 }
 
-.linkDisabled {
+/* ───── 더보기 ('전체' 칩에서 PAGE_SIZE 초과 시) ───── */
+.moreWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-8);
+}
+
+.more {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
-  color: var(--color-text-muted);
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-7);
+  border: 1px solid var(--color-text);
+  background: none;
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+  transition: background var(--motion-fast), color var(--motion-fast);
+}
+
+.more:hover {
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+.moreCount {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* 더보기 후 포커스를 받는 카드 — 클릭으로는 테두리를 보이지 않게 */
+.card:focus:not(:focus-visible) {
+  outline: none;
 }

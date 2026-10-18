@@ -1,8 +1,48 @@
-import type { Project } from './types'
+import blogDemo from '../assets/projects/blog-demo.jpg'
+import design1 from '../assets/projects/design-1.jpg'
+import design2 from '../assets/projects/design-2.jpg'
+import design3 from '../assets/projects/design-3.jpg'
+import mySns from '../assets/projects/my-sns.jpg'
+import type { Project, ProjectCategory } from './types'
 
+// 분류 칩에 표시되는 순서
+export const projectCategories: ProjectCategory[] = ['웹앱', '웹사이트', '디자인']
+
+// docs/project.md 목록 기준
 export const projects: Project[] = [
   {
+    slug: 'my-sns',
+    category: '웹앱',
+    title: 'SNS 구현',
+    tagline: 'TODO: 한 줄 소개',
+    period: { start: 'TODO', end: 'TODO' },
+    role: 'TODO: 맡은 역할',
+    stack: [],
+    thumbnail: mySns,
+    links: {
+      demo: 'https://r00neyj.github.io/my-sns/',
+      repo: 'https://github.com/R00neyj/my-sns',
+    },
+    featured: false,
+  },
+  {
+    slug: 'blog-demo',
+    category: '웹사이트',
+    title: '블로그 구현',
+    tagline: 'TODO: 한 줄 소개',
+    period: { start: 'TODO', end: 'TODO' },
+    role: 'TODO: 맡은 역할',
+    stack: [],
+    thumbnail: blogDemo,
+    links: {
+      demo: 'https://r00neyj.github.io/blog-demo/',
+      repo: 'https://github.com/R00neyj/blog-demo',
+    },
+    featured: false,
+  },
+  {
     slug: 'portfolio-site',
+    category: '웹사이트',
     title: '개인 포트폴리오 사이트 (이 사이트)',
     tagline: '요구사항 정의부터 설계·구현·배포까지 직접 진행한 1인 프로젝트',
     period: { start: '2026-09', end: null },
@@ -21,5 +61,41 @@ export const projects: Project[] = [
     stack: ['React', 'TypeScript', 'Vite', 'CSS Modules'],
     links: {},
     featured: true,
+  },
+  {
+    slug: 'design-1',
+    category: '디자인',
+    title: '예시 디자인 작업물',
+    tagline: 'TODO: 한 줄 소개',
+    period: { start: 'TODO', end: 'TODO' },
+    role: '디자인',
+    stack: [],
+    thumbnail: design1,
+    links: {},
+    featured: false,
+  },
+  {
+    slug: 'design-2',
+    category: '디자인',
+    title: '예시 디자인 작업물2',
+    tagline: 'TODO: 한 줄 소개',
+    period: { start: 'TODO', end: 'TODO' },
+    role: '디자인',
+    stack: [],
+    thumbnail: design2,
+    links: {},
+    featured: false,
+  },
+  {
+    slug: 'design-3',
+    category: '디자인',
+    title: '예시 디자인 작업물3',
+    tagline: 'TODO: 한 줄 소개',
+    period: { start: 'TODO', end: 'TODO' },
+    role: '디자인',
+    stack: [],
+    thumbnail: design3,
+    links: {},
+    featured: false,
   },
 ]

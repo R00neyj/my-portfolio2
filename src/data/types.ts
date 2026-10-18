@@ -5,15 +5,20 @@ export interface SkillCategory {
   items: string[]
 }
 
+// Projects 섹션의 분류 칩 — 칩 순서는 data/projects.ts의 projectCategories를 따른다
+export type ProjectCategory = '웹앱' | '웹사이트' | '디자인'
+
 export interface Project {
   slug: string
+  category: ProjectCategory
   title: string
   tagline: string
   period: { start: string; end: string | null }
   role: string
-  problem: string
-  decisions: string[]
-  outcome: string[]
+  // 디자인 작업물처럼 설명이 필요 없는 항목은 아래 세 필드를 생략할 수 있다
+  problem?: string
+  decisions?: string[]
+  outcome?: string[]
   stack: string[]
   thumbnail?: string
   links: {

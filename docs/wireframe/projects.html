@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Projects 분류 칩 와이어프레임</title>
+<style>
+  :root {
+    --bg: #eef0f3;
+    --panel: #ffffff;
+    --text: #14161a;
+    --muted: #5b6472;
+    --border: #d5d9e0;
+    --box: #e3e6eb;
+    --active: #14161a;
+    --active-text: #ffffff;
+    --anno: #d93a3f;
+    --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16181d;
+      --panel: #1e2128;
+      --text: #e8eaed;
+      --muted: #9aa1ac;
+      --border: #2e333c;
+      --box: #2a2e36;
+      --active: #e8eaed;
+      --active-text: #14161a;
+      --anno: #f0595e;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  code {
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 0.92em;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--bg);
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 24px 16px 64px; }
+
+  .page-title { margin: 0 0 4px; font-size: 18px; }
+  .page-sub { margin: 0 0 24px; color: var(--muted); }
+
+  /* ───── 와이어프레임 본체 ───── */
+  .frame {
+    padding: 32px 24px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+
+  .frame h2 { margin: 0 0 16px; font-size: 24px; }
+
+  .anno-wrap { position: relative; }
+  .anno {
+    display: inline-block;
+    margin: 0 0 8px;
+    padding: 2px 8px;
+    border: 1px dashed var(--anno);
+    border-radius: 6px;
+    color: var(--anno);
+    font-size: 12px;
+  }
+
+  /* 칩 */
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 8px;
+    padding: 0;
+    list-style: none;
+  }
+  .chip {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+  }
+  .chip .count { margin-left: 4px; color: var(--muted); font-size: 12px; }
+  .chip[aria-pressed="true"] { border-color: var(--active); background: var(--active); color: var(--active-text); }
+  .chip[aria-pressed="true"] .count { color: inherit; opacity: 0.75; }
+  .chip:focus-visible { outline: 2px solid var(--anno); outline-offset: 2px; }
+
+  .status { margin: 0 0 20px; color: var(--muted); font-size: 13px; }
+
+  /* 카드 */
+  .list {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .thumb {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 9;
+    background: var(--box);
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .card-body { display: flex; flex-direction: column; gap: 8px; padding: 16px; }
+  .badge {
+    align-self: flex-start;
+    padding: 0 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .card h3 { margin: 0; font-size: 16px; }
+  .line { height: 10px; border-radius: 4px; background: var(--box); }
+  .line.short { width: 60%; }
+  .link { color: var(--muted); font-size: 13px; text-decoration: underline; }
+
+  /* 설명 */
+  .notes {
+    margin-top: 24px;
+    padding: 20px 24px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel);
+  }
+  .notes h3 { margin: 0 0 8px; font-size: 15px; }
+  .notes ol, .notes ul { margin: 0 0 16px; padding-left: 20px; }
+  .notes li + li { margin-top: 4px; }
+  pre {
+    margin: 0;
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: var(--bg);
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  @media (max-width: 480px) {
+    .frame { padding: 24px 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1 class="page-title">Projects 섹션 — 분류 칩 와이어프레임</h1>
+  <p class="page-sub">칩을 눌러 보세요. 실제 사이트에 넣기 전, 배치와 동작만 확인하는 회색 상자 그림입니다.</p>
+
+  <section class="frame" aria-labelledby="wf-heading">
+    <h2 id="wf-heading">Projects</h2>
+
+    <span class="anno">① 분류 칩 — 한 번에 하나만 선택</span>
+    <ul class="chips" role="group" aria-label="프로젝트 분류">
+      <!-- JS가 채운다 -->
+    </ul>
+
+    <span class="anno">② 결과 개수 안내 (화면 읽기 프로그램에도 읽힘)</span>
+    <p class="status" id="status" aria-live="polite"></p>
+
+    <span class="anno">③ 카드 목록 — 선택한 분류만 보임 / 카드에 분류 배지</span>
+    <ul class="list" id="list"></ul>
+  </section>
+
+  <section class="notes">
+    <h3>동작 정리</h3>
+    <ol>
+      <li>처음엔 <strong>전체</strong>가 선택돼 모든 작업물이 보입니다.</li>
+      <li>칩 옆 숫자는 그 분류에 속한 작업물 개수입니다. 개수가 0인 분류는 칩을 만들지 않습니다.</li>
+      <li>칩은 <code>&lt;button aria-pressed&gt;</code>라서 키보드(Tab → Enter/Space)로도 고를 수 있습니다.</li>
+      <li>디자인 작업물은 링크 대신 이미지가 있으므로 카드에 썸네일만 크게 보이고 “소스 코드” 링크는 숨깁니다.</li>
+      <li>라이브러리 설치 없이 React <code>useState</code> 하나로 거릅니다.</li>
+    </ol>
+
+    <h3>배열 데이터에 추가할 항목 (<code>src/data/types.ts</code>)</h3>
+<pre><code>export type ProjectCategory = '웹앱' | '웹사이트' | '디자인'
+
+export interface Project {
+  slug: string
+  category: ProjectCategory   // ← 새로 추가
+  title: string
+  ...
+}</code></pre>
+  </section>
+</div>
+
+<script>
+  // docs/project.md 내용 + 기존 포트폴리오 사이트 항목
+  const projects = [
+    { title: 'SNS 구현', category: '웹앱', link: 'github.com/R00neyj/my-sns' },
+    { title: '블로그 구현', category: '웹사이트', link: 'github.com/R00neyj/blog-demo' },
+    { title: '개인 포트폴리오 사이트', category: '웹사이트', link: null },
+    { title: '예시 디자인 작업물', category: '디자인', image: '작업물1.jpg' },
+    { title: '예시 디자인 작업물2', category: '디자인', image: '작업물2.jpg' },
+    { title: '예시 디자인 작업물3', category: '디자인', image: '작업물3.jpg' },
+  ]
+  const CATEGORIES = ['웹앱', '웹사이트', '디자인']
+
+  const chipsEl = document.querySelector('.chips')
+  const listEl = document.getElementById('list')
+  const statusEl = document.getElementById('status')
+  let selected = '전체'
+
+  function render() {
+    const options = ['전체', ...CATEGORIES]
+    chipsEl.innerHTML = options
+      .map((name) => {
+        const count = name === '전체' ? projects.length : projects.filter((p) => p.category === name).length
+        if (count === 0) return ''
+        return `<li><button type="button" class="chip" data-name="${name}" aria-pressed="${name === selected}">${name}<span class="count">${count}</span></button></li>`
+      })
+      .join('')
+
+    const visible = selected === '전체' ? projects : projects.filter((p) => p.category === selected)
+    listEl.innerHTML = visible
+      .map(
+        (p) => `<li><article class="card">
+          <div class="thumb">${p.image ? '이미지 · ' + p.image : '썸네일'}</div>
+          <div class="card-body">
+            <span class="badge">${p.category}</span>
+            <h3>${p.title}</h3>
+            ${p.image ? '' : '<div class="line"></div><div class="line short"></div>'}
+            ${p.link ? `<span class="link">소스 코드 ↗ ${p.link}</span>` : ''}
+          </div>
+        </article></li>`
+      )
+      .join('')
+
+    statusEl.textContent = `${selected} · ${visible.length}개 작업물`
+  }
+
+  chipsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('.chip')
+    if (!btn) return
+    selected = btn.dataset.name
+    render()
+    chipsEl.querySelector(`[data-name="${selected}"]`).focus()
+  })
+
+  render()
+</script>
+</body>
+</html>
