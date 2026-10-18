@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/my-portfolio2/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0B0E14" />
+    <meta name="theme-color" content="#111111" />
     <meta
       name="description"
       content="프론트엔드 개발자 포트폴리오 — 프로젝트, 기술 스택, 이력을 한 곳에서 확인할 수 있습니다."
@@ -30,10 +30,22 @@
         } catch (error) {
           /* localStorage 접근 불가 환경 — 시스템 기본값으로 대체 */
         }
-      })()
+      })();
+
+      // 로딩 화면(Loader): 렌더 전에 data-loading을 붙여 Hero 등장 모션을 멈추고 스크롤을 잠근다.
+      // 모션 줄이기 환경에서는 로딩 화면을 아예 쓰지 않는다(FR-X3).
+      // JS가 실패해도 화면이 잠긴 채 남지 않도록 8초 뒤에는 무조건 푼다.
+      (function () {
+        if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+        var root = document.documentElement
+        root.dataset.loading = ''
+        setTimeout(function () {
+          delete root.dataset.loading
+        }, 8000)
+      })();
     </script>
-    <script type="module" crossorigin src="/my-portfolio2/assets/index-Bqywz87M.js"></script>
-    <link rel="stylesheet" crossorigin href="/my-portfolio2/assets/index-BXbbu91k.css">
+    <script type="module" crossorigin src="/my-portfolio2/assets/index--21_S-7K.js"></script>
+    <link rel="stylesheet" crossorigin href="/my-portfolio2/assets/index-DyaO2MNn.css">
   </head>
   <body>
     <div id="root"></div>
