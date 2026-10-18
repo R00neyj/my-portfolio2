@@ -1,9 +1,7 @@
-import blogDemo from '../assets/projects/blog-demo.jpg'
-import design1 from '../assets/projects/design-1.jpg'
-import design2 from '../assets/projects/design-2.jpg'
-import design3 from '../assets/projects/design-3.jpg'
-import mySns from '../assets/projects/my-sns.jpg'
 import type { Project, ProjectCategory } from './types'
+
+// 썸네일은 public/projects/에 있다. 배포 경로(vite.config.ts의 base)가 앞에 붙도록 BASE_URL을 쓴다
+const thumb = (file: string) => `${import.meta.env.BASE_URL}projects/${file}`
 
 // 분류 칩에 표시되는 순서
 export const projectCategories: ProjectCategory[] = ['웹앱', '웹사이트', '디자인']
@@ -18,7 +16,7 @@ export const projects: Project[] = [
     period: { start: 'TODO', end: 'TODO' },
     role: 'TODO: 맡은 역할',
     stack: [],
-    thumbnail: mySns,
+    thumbnail: thumb('my-sns.jpg'),
     links: {
       demo: 'https://r00neyj.github.io/my-sns/',
       repo: 'https://github.com/R00neyj/my-sns',
@@ -33,7 +31,7 @@ export const projects: Project[] = [
     period: { start: 'TODO', end: 'TODO' },
     role: 'TODO: 맡은 역할',
     stack: [],
-    thumbnail: blogDemo,
+    thumbnail: thumb('blog-demo.jpg'),
     links: {
       demo: 'https://r00neyj.github.io/blog-demo/',
       repo: 'https://github.com/R00neyj/blog-demo',
@@ -70,7 +68,7 @@ export const projects: Project[] = [
     period: { start: 'TODO', end: 'TODO' },
     role: '디자인',
     stack: [],
-    thumbnail: design1,
+    thumbnail: thumb('design-1.jpg'),
     links: {},
     featured: false,
   },
@@ -82,7 +80,7 @@ export const projects: Project[] = [
     period: { start: 'TODO', end: 'TODO' },
     role: '디자인',
     stack: [],
-    thumbnail: design2,
+    thumbnail: thumb('design-2.jpg'),
     links: {},
     featured: false,
   },
@@ -94,7 +92,7 @@ export const projects: Project[] = [
     period: { start: 'TODO', end: 'TODO' },
     role: '디자인',
     stack: [],
-    thumbnail: design3,
+    thumbnail: thumb('design-3.jpg'),
     links: {},
     featured: false,
   },
