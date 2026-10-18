@@ -47,23 +47,6 @@
   display: block;
 }
 
-/* §8.4 P3 제목 다시 칠하기 — 마우스로 누르면 text → accent → text (450ms) */
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .title {
-    cursor: default;
-  }
-
-  .title.repaint {
-    animation: repaint 450ms var(--ease-out-soft);
-  }
-}
-
-@keyframes repaint {
-  50% {
-    color: var(--color-accent);
-  }
-}
-
 /* ③ 한 줄 소개 — 구절 단위로만 줄바꿈 (FR-H1b) */
 .tagline {
   margin-top: var(--space-6);

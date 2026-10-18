@@ -9,7 +9,6 @@ const ClawdScene = lazy(() => import('../ClawdScene/ClawdScene'))
 function Hero() {
   const heroRef = useRef<HTMLElement>(null)
   const [showScene, setShowScene] = useState(false)
-  const [repaint, setRepaint] = useState(false)
 
   // 첫 화면 텍스트(LCP)가 먼저 그려지도록, 브라우저가 한가해진 뒤에 3D를 불러온다 (FR-H4)
   useEffect(() => {
@@ -35,16 +34,7 @@ function Hero() {
         <p className={styles.label}>
           {profile.name} · {profile.role}
         </p>
-        {/* 마우스 전용 장식 효과라 키보드 포커스 대상이 아니다 */}
-        <h1
-          id="hero-title"
-          className={repaint ? `${styles.title} ${styles.repaint}` : styles.title}
-          onPointerDown={(e) => {
-            if (e.pointerType !== 'mouse' || repaint) return
-            setRepaint(true)
-          }}
-          onAnimationEnd={() => setRepaint(false)}
-        >
+        <h1 id="hero-title" className={styles.title}>
           <span>{profile.year}</span> <span>PORTFOLIO</span>
         </h1>
         <p className={styles.tagline}>
