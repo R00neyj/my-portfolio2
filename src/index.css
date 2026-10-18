@@ -8,6 +8,8 @@
 
 html {
   color-scheme: light dark;
+  /* 모션 요소가 1~2px 넘쳐도 가로 스크롤이 생기지 않게 자른다 (clip은 sticky 헤더를 깨지 않는다) */
+  overflow-x: clip;
   /* 앵커 이동 시 sticky 헤더에 섹션 머리가 가리지 않게 헤더 높이만큼 띄운다 (§8.2) */
   scroll-padding-top: var(--header-h);
   scroll-behavior: smooth;

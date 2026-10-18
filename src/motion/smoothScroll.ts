@@ -41,11 +41,16 @@ export function setupSmoothScroll(): () => void {
   gsap.ticker.add(tick)
   gsap.ticker.lagSmoothing(0)
 
-  // 로딩 화면이 떠 있는 동안은 멈춰 두고, 걷히면 풀면서 고정 구간 위치를 다시 잰다
+  // 로딩 화면이 떠 있는 동안은 멈춰 두고, 걷히면 풀면서 고정 구간 위치를 다시 잰다.
+  // 잠금이 풀려 세로 스크롤바가 생긴 '다음 프레임'에 재야 한다 — 스크롤바가 생기는 건 resize로 잡히지 않아,
+  // 스크롤바 없을 때 잰 Hero 고정 폭이 그대로 남으면 그만큼 가로 스크롤이 생긴다
+  let frame = 0
   instance.stop()
   const cancelWait = whenLoaderDone(() => {
     instance.start()
-    ScrollTrigger.refresh()
+    frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => ScrollTrigger.refresh())
+    })
   })
 
   // 페이지 안 앵커 클릭을 Lenis 이동으로 바꾼다.
@@ -65,6 +70,7 @@ export function setupSmoothScroll(): () => void {
 
   return () => {
     cancelWait()
+    cancelAnimationFrame(frame)
     document.removeEventListener('click', handleClick)
     gsap.ticker.remove(tick)
     instance.destroy()
