@@ -1,0 +1,1130 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>나머지 섹션 레이아웃 시안</title>
+<style>
+  /* ───────────── 와이어프레임 바깥(도구 화면) ───────────── */
+  :root {
+    --chrome-bg: #eef0f3;
+    --chrome-panel: #ffffff;
+    --chrome-text: #14161a;
+    --chrome-muted: #5b6472;
+    --chrome-border: #d5d9e0;
+    --chrome-active: #14161a;
+    --chrome-active-text: #ffffff;
+    --anno: #d93a3f;
+    --tb: 0px; /* 도구 막대 높이 — JS가 채운다. 사이트 헤더가 그 아래에 붙는다 */
+    --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --chrome-bg: #16181d;
+      --chrome-panel: #1e2128;
+      --chrome-text: #e8eaed;
+      --chrome-muted: #9aa1ac;
+      --chrome-border: #2e333c;
+      --chrome-active: #e8eaed;
+      --chrome-active-text: #14161a;
+      --anno: #f0595e;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--chrome-bg);
+    color: var(--chrome-text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 12px 16px;
+    background: var(--chrome-panel);
+    border-bottom: 1px solid var(--chrome-border);
+  }
+  .toolbar h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--chrome-border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-right: 1px solid var(--chrome-border);
+    background: transparent;
+    color: var(--chrome-text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--chrome-active); color: var(--chrome-active-text); }
+  .seg button:focus-visible { outline: 2px solid var(--anno); outline-offset: 2px; }
+
+  .wrap { padding: 20px 16px 40vh; }
+
+  .desc {
+    max-width: 1280px;
+    margin: 0 auto 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--chrome-border);
+    border-radius: 12px;
+    background: var(--chrome-panel);
+  }
+  .desc h2 { margin: 0 0 4px; font-size: 15px; }
+  .desc p { margin: 0 0 8px; color: var(--chrome-muted); }
+  .desc dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+  .desc dt { font-weight: 600; }
+  .desc dd { margin: 0; }
+  .desc .note { margin: 10px 0 0; }
+
+  .stage {
+    container-type: inline-size;
+    max-width: 1280px;
+    margin: 0 auto;
+    /* hidden 대신 clip — 안쪽 sticky 헤더가 계속 동작한다 */
+    overflow: clip;
+    border: 1px solid var(--chrome-border);
+    border-radius: 12px;
+    transition: max-width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .stage[data-size="tablet"] { max-width: 768px; }
+  .stage[data-size="mobile"] { max-width: 375px; }
+
+  .anno {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px dashed var(--anno);
+    color: var(--anno);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    vertical-align: middle;
+  }
+  .anno.block { display: block; width: fit-content; margin: 0 0 12px; }
+  body[data-anno="off"] .anno { display: none; }
+
+  /* ───────────── 사이트 안쪽 — DESIGN.md 토큰 ───────────── */
+  .site {
+    --color-bg: #FFFFFF;
+    --color-surface: #F2F2F2;
+    --color-text: #111111;
+    --color-text-muted: #555555;
+    --color-border: #D2D2D2;
+    --color-border-strong: #111111;
+    --color-accent: #AD522E;
+    --color-accent-bg: #AD522E;
+    --color-accent-contrast: #FFFFFF;
+
+    --font-size-h2: clamp(36px, 4.4cqw, 88px);
+    --font-size-h3: clamp(22px, 1.7cqw, 32px);
+    --font-size-lg: 20px;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-label: 12px;
+
+    --grid-gap: clamp(12px, 1.25cqw, 24px);
+    --gutter: clamp(16px, 3.2cqw, 56px);
+    --section-space: clamp(64px, 8cqw, 160px);
+    --step: clamp(22px, 3.2cqw, 64px);
+    --line: 1px solid var(--color-border);
+    --line-strong: 1px solid var(--color-border-strong);
+    --radius-pill: 999px;
+
+    --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.3, 1.6, 0.5, 1);
+
+    position: relative;
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: background 680ms var(--ease-out-soft), color 680ms var(--ease-out-soft);
+  }
+  .site[data-theme="dark"] {
+    --color-bg: #111111;
+    --color-surface: #191919;
+    --color-text: #FFFFFF;
+    --color-text-muted: #A3A3A3;
+    --color-border: #2E2E2E;
+    --color-border-strong: #FFFFFF;
+    --color-accent: #D97757;
+    --color-accent-bg: #D97757;
+    --color-accent-contrast: #111111;
+  }
+
+  .site a { color: inherit; text-decoration: none; }
+  .site button { font: inherit; color: inherit; cursor: pointer; }
+  .site :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .site ul, .site ol { margin: 0; padding: 0; list-style: none; }
+
+  .sec { padding: var(--section-space) var(--gutter); border-top: var(--line); }
+
+  /* §7.1 섹션 머리 — 세 시안 공통 */
+  .head {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px var(--grid-gap);
+    margin-bottom: calc(var(--step) * 2);
+  }
+  .label {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .head > * { grid-column: 1 / -1; }
+  .title { margin: 0; font-size: var(--font-size-h2); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; }
+  .lead { margin: 0; max-width: 70ch; color: var(--color-text-muted); font-size: var(--font-size-lg); line-height: 1.6; }
+  @container (min-width: 1024px) {
+    .head { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .head .title { grid-column: 1 / 8; }
+    .head .lead { grid-column: 8 / 13; align-self: end; }
+  }
+
+  .h3 { margin: 0; font-size: var(--font-size-h3); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; }
+  .txt { margin: 0; font-size: var(--font-size-base); line-height: 1.6; }
+  .sm { margin: 0; font-size: var(--font-size-sm); line-height: 1.6; }
+  .muted { color: var(--color-text-muted); }
+  .accent { color: var(--color-accent); }
+
+  /* 텍스트 링크 밑줄 — 왼쪽에서 오른쪽으로 (§8.3) */
+  .ul {
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size 260ms var(--ease-out-expo);
+  }
+  @media (hover: hover) { .ul:hover { background-size: 100% 1px; } }
+  .ul:focus-visible { background-size: 100% 1px; }
+
+  /* 테마 토글 자리 (원형 — --radius-pill) */
+  .tg {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: 16px;
+    transition: transform 200ms var(--ease-bounce);
+  }
+  @media (hover: hover) { .tg:hover { transform: scale(1.12); } }
+
+  .menu-btn {
+    min-height: 36px;
+    padding: 0 12px;
+    border: var(--line-strong);
+    background: transparent;
+    font-size: var(--font-size-label) !important;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 6px 10px;
+    border: var(--line);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1;
+    text-transform: uppercase;
+    transition: transform 200ms var(--ease-bounce), border-color 200ms;
+  }
+  @media (hover: hover) { .tag:hover { transform: scale(1.12); border-color: var(--color-border-strong); } }
+
+  /* 유지하는 섹션 자리표시 */
+  .keep {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    min-height: 160px;
+    padding: 32px var(--gutter);
+    border-top: var(--line);
+    background: repeating-linear-gradient(135deg, var(--color-surface) 0 12px, var(--color-bg) 12px 24px);
+    color: var(--color-text-muted);
+  }
+  .keep.hero { min-height: 280px; }
+  .keep strong { color: var(--color-text); font-size: var(--font-size-h3); font-weight: 500; letter-spacing: -0.01em; }
+
+  /* 등장 모션 미리보기 (§8.5) */
+  .rise { transition: transform 800ms var(--ease-out-soft), opacity 800ms var(--ease-out-soft); }
+  .rise.is-hidden { opacity: 0; transform: translateY(28px); }
+
+  /* 모바일 메뉴 패널 공통 — 헤더에 .open이 붙으면 보인다 */
+  .mpanel { display: none; grid-column: 1 / -1; }
+  .open .mpanel { display: block; }
+
+  /* ═══════════════════════════ 시안 A — 인덱스 표 ═══════════════════════════ */
+  .a-hd {
+    position: sticky;
+    top: var(--tb);
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 0 12px;
+    padding: 12px var(--gutter);
+    border-bottom: var(--line);
+    background: var(--color-bg);
+  }
+  .a-hd .logo { font-weight: 600; letter-spacing: -0.01em; }
+  .a-hd nav { display: none; }
+  .a-hd nav ul { display: flex; justify-content: space-between; }
+  .a-hd nav a { display: inline-flex; gap: 6px; padding: 8px 0; }
+  .a-hd nav a .label { color: inherit; }
+  .a-hd nav a .no { color: var(--color-text-muted); }
+  .a-hd nav a[aria-current] { color: var(--color-accent); }
+  .a-hd nav a[aria-current] .no { color: var(--color-accent); }
+  .a-hd .mpanel ul { margin-top: 12px; border-top: var(--line); }
+  .a-hd .mpanel a { display: flex; justify-content: space-between; padding: 16px 0; border-bottom: var(--line); font-size: var(--font-size-h3); }
+  @container (min-width: 1024px) {
+    .a-hd { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 var(--grid-gap); }
+    .a-hd .logo { grid-column: 1 / 3; }
+    .a-hd nav { display: block; grid-column: 4 / 11; }
+    .a-hd .tg { grid-column: 12; justify-self: end; }
+    .a-hd .menu-btn, .a-hd .mpanel { display: none !important; }
+  }
+
+  .a-rows { border-top: var(--line-strong); }
+  .a-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 12px var(--grid-gap);
+    padding: 24px 0;
+    border-bottom: var(--line);
+    transition: background 260ms var(--ease-out-expo);
+  }
+  .a-row .wide { grid-column: 1 / -1; }
+  /* 개수(c4)는 항상 첫 줄 오른쪽 끝 — 자동 배치가 다음 줄로 밀지 않게 줄을 고정 */
+  .a-row .c4 { grid-column: 3; grid-row: 1; }
+  @media (hover: hover) { .a-row:hover { background: var(--color-surface); } }
+
+  .a-edu { grid-template-columns: 1fr; }
+  .a-skill-items { font-size: var(--font-size-h3); font-weight: 500; line-height: 1.3; letter-spacing: -0.01em; }
+  .a-skill-items .sep { color: var(--color-border); }
+  @container (min-width: 1024px) {
+    .a-row { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: baseline; }
+    .a-row .c1 { grid-column: 1 / 2; }
+    .a-row .c2 { grid-column: 2 / 5; }
+    .a-row .c3 { grid-column: 5 / 12; }
+    .a-row .c4 { grid-column: 12 / 13; text-align: right; }
+    .a-row .c3.wide { grid-column: 5 / 12; }
+    .a-edu .c1 { grid-column: 1 / 4; }
+    .a-edu .c2 { grid-column: 4 / 9; }
+    .a-edu .c3 { grid-column: 9 / 13; }
+  }
+  .a-edu .who { display: flex; flex-direction: column; gap: 4px; }
+  .a-edu ul { display: flex; flex-direction: column; gap: 4px; }
+  .a-edu ul li::before { content: '— '; color: var(--color-text-muted); }
+
+  .a-mail {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.2em;
+    max-width: 100%;
+    font-size: clamp(30px, 7cqw, 128px);
+    font-weight: 500;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    overflow-wrap: anywhere;
+    background-size: 0 2px !important;
+  }
+  @media (hover: hover) { .a-mail:hover { background-size: 100% 2px !important; } }
+  .a-mail .arw { color: var(--color-accent); font-size: 0.6em; }
+  .a-links {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-top: calc(var(--step) * 2);
+    border-top: var(--line-strong);
+  }
+  .a-links > * {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 20px 0;
+    border-bottom: var(--line);
+    text-align: left;
+    background: transparent;
+    border-left: 0; border-right: 0; border-top: 0;
+  }
+  .a-links .row { display: flex; justify-content: space-between; align-items: baseline; }
+  @container (min-width: 768px) {
+    .a-links { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .a-links > * { padding: 20px var(--grid-gap); border-bottom: 0; border-left: var(--line); }
+    .a-links > *:first-child { border-left: 0; padding-left: 0; }
+  }
+
+  .a-ft {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 24px var(--gutter);
+    border-top: var(--line);
+  }
+  @container (min-width: 768px) {
+    .a-ft { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .a-ft > :nth-child(2) { justify-self: center; }
+    .a-ft > :nth-child(3) { justify-self: end; }
+  }
+
+  /* ═══════════════════════════ 시안 B — 칸 나누기(박스 그리드) ═══════════════════════════ */
+  /* 칸 사이를 1px 간격 + 선 색 배경으로 메워, 모든 칸이 1px 선 하나를 나눠 쓰게 한다 */
+  .b-cells { display: grid; gap: 1px; background: var(--color-border); border: var(--line); }
+  .b-cells > * { background: var(--color-bg); }
+
+  .b-hd {
+    position: sticky;
+    top: var(--tb);
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1px;
+    background: var(--color-border);
+    border-bottom: var(--line);
+  }
+  .b-hd > * { display: flex; align-items: center; min-height: 56px; background: var(--color-bg); }
+  .b-hd .logo { gap: 10px; padding: 0 var(--gutter); font-weight: 600; }
+  .b-hd .logo .mark { display: inline-grid; place-items: center; width: 28px; height: 28px; background: var(--color-text); color: var(--color-bg); font-size: 13px; }
+  .b-hd .cell { justify-content: center; padding: 0 16px; }
+  .b-hd nav { display: none; }
+  .b-hd nav ul { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; width: 100%; height: 100%; background: var(--color-border); }
+  .b-hd nav a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    height: 100%;
+    padding: 0 16px;
+    background: var(--color-bg);
+    transition: background 260ms var(--ease-out-expo), color 260ms var(--ease-out-expo);
+  }
+  .b-hd nav a .label { color: inherit; }
+  .b-hd nav a .no { color: var(--color-text-muted); font-size: 11px; }
+  .b-hd nav a[aria-current] { background: var(--color-text); color: var(--color-bg); }
+  .b-hd nav a[aria-current] .no { color: inherit; opacity: 0.7; }
+  @media (hover: hover) { .b-hd nav a:not([aria-current]):hover { background: var(--color-surface); } }
+  .b-hd .menu-btn { border: 0; min-height: 56px; padding: 0 20px; background: var(--color-bg); }
+  .b-hd .mpanel { display: none; background: var(--color-bg); }
+  .b-hd.open .mpanel { display: block; }
+  .b-hd .mpanel ul { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--color-border); }
+  .b-hd .mpanel a { display: flex; flex-direction: column; gap: 4px; padding: 20px var(--gutter); background: var(--color-bg); }
+  @container (min-width: 1024px) {
+    .b-hd { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .b-hd .logo { grid-column: 1 / 4; }
+    .b-hd nav { display: block; grid-column: 4 / 12; }
+    .b-hd .cell { grid-column: 12; }
+    .b-hd .menu-btn, .b-hd .mpanel { display: none !important; }
+  }
+
+  .b-skills { grid-template-columns: 1fr; }
+  .b-skill { display: flex; flex-direction: column; gap: 16px; min-height: 220px; padding: 24px; }
+  .b-skill .meta { display: flex; justify-content: space-between; }
+  .b-skill .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+  .b-skill.sum { justify-content: space-between; background: var(--color-surface); }
+  .b-skill.sum .big { font-size: var(--font-size-h2); font-weight: 500; line-height: 1; letter-spacing: -0.03em; }
+  @container (min-width: 768px) { .b-skills { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @container (min-width: 1024px) { .b-skills { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+  /* Education — §7.2 "2장이면 2열 엇갈림" */
+  .b-edu { display: grid; grid-template-columns: 1fr; gap: var(--step); align-items: start; }
+  .b-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: calc(100% - var(--step));
+    padding: 24px;
+    border: var(--line);
+    transition: border-color 250ms, transform 250ms var(--ease-bounce);
+  }
+  .b-card:nth-child(2n) { margin-left: var(--step); }
+  .b-card .meta { display: flex; justify-content: space-between; }
+  .b-card .year { font-size: var(--font-size-h2); font-weight: 500; line-height: 1; letter-spacing: -0.03em; }
+  .b-card ul { padding-top: 12px; border-top: var(--line); }
+  .b-card ul li::before { content: '— '; color: var(--color-text-muted); }
+  .badge { padding: 4px 8px; background: var(--color-accent-bg); color: var(--color-accent-contrast); }
+  @media (hover: hover) { .b-card:hover { border-color: var(--color-border-strong); transform: rotate(-1.5deg); } }
+  @container (min-width: 1024px) {
+    .b-edu { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 var(--grid-gap); }
+    .b-card { width: auto; grid-column: span 6; }
+    .b-card:nth-child(2n) { margin-left: 0; margin-top: calc(var(--step) * 2); }
+    .b-card .year { font-size: clamp(56px, 7cqw, 128px); }
+  }
+
+  .b-contact { background: var(--color-surface); }
+  .b-ct { grid-template-columns: 1fr; }
+  .b-ct > * { display: flex; flex-direction: column; gap: 16px; padding: 28px; }
+  .b-ct .btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
+    border: var(--line-strong);
+    background: transparent;
+    font-size: var(--font-size-sm) !important;
+    font-weight: 500;
+    transition: transform 200ms var(--ease-bounce);
+  }
+  .btn.fill { border-color: var(--color-accent-bg); background: var(--color-accent-bg); color: var(--color-accent-contrast) !important; }
+  @media (hover: hover) { .btn:hover { transform: translateY(-2px); } }
+  .b-ct .links a { display: flex; justify-content: space-between; align-items: baseline; padding: 14px 0; border-bottom: var(--line); }
+  .b-ct .links li:first-child a { border-top: var(--line); }
+  @container (min-width: 1024px) {
+    .b-ct { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .b-ct > * { min-height: 320px; }
+  }
+
+  .b-ft { grid-template-columns: 1fr; border: 0; border-top: var(--line); }
+  .b-ft > * { display: flex; align-items: center; min-height: 56px; padding: 0 var(--gutter); }
+  @container (min-width: 768px) {
+    .b-ft { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .b-ft > :nth-child(2) { justify-content: center; }
+    .b-ft > :nth-child(3) { justify-content: flex-end; }
+  }
+
+  /* ═══════════════════════════ 시안 C — 큰 글자(에디토리얼) ═══════════════════════════ */
+  .c-hd {
+    position: sticky;
+    top: var(--tb);
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px var(--gutter);
+    background: var(--color-bg);
+    border-bottom: var(--line);
+  }
+  .c-hd .logo { font-weight: 600; }
+  .c-hd .now { display: none; }
+  .c-hd .right { display: flex; gap: 8px; align-items: center; }
+  .c-hd .menu-btn { min-width: 84px; }
+  .c-hd .mpanel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: calc(100vh - var(--tb) - 61px);
+    padding: var(--step) var(--gutter);
+    overflow: auto;
+    background: var(--color-bg);
+    border-bottom: var(--line);
+  }
+  .c-hd .mpanel ul { border-top: var(--line); }
+  .c-hd .mpanel a {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: var(--line);
+    font-size: var(--font-size-h2);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    transition: color 260ms var(--ease-out-expo), padding 400ms var(--ease-out-expo);
+  }
+  .c-hd .mpanel a .label { min-width: 3em; }
+  @media (hover: hover) { .c-hd .mpanel a:hover { color: var(--color-accent); padding-left: var(--step); } }
+  @container (min-width: 768px) {
+    .c-hd { grid-template-columns: 1fr auto 1fr; }
+    .c-hd .now { display: block; }
+    .c-hd .right { justify-self: end; }
+  }
+
+  /* About 시안 C와 같은 뼈대: 왼쪽 2열 고정 라벨 + 오른쪽 10열 본문 */
+  .c-wrap .label-col { margin-bottom: 32px; }
+  .c-wrap .label-col .h3 { margin-top: 12px; }
+  @container (min-width: 1024px) {
+    .c-wrap { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 var(--grid-gap); }
+    .c-wrap .label-col { grid-column: 1 / 3; position: sticky; top: calc(var(--tb) + 96px); align-self: start; }
+    .c-wrap .body-col { grid-column: 3 / 13; }
+  }
+
+  .c-group { display: flex; flex-direction: column; gap: 12px; padding: 24px 0 32px; border-top: var(--line); }
+  .c-group:last-child { border-bottom: var(--line); }
+  .c-words { margin: 0; font-size: clamp(30px, 4.4cqw, 88px); font-weight: 500; line-height: 1.1; letter-spacing: -0.03em; }
+  .c-words .w { display: inline-block; transition: color 260ms var(--ease-out-expo), transform 200ms var(--ease-bounce); }
+  .c-words .sep { color: var(--color-border); }
+  @media (hover: hover) { .c-words .w:hover { color: var(--color-accent); transform: translateY(-4px); } }
+
+  .c-edu { display: grid; grid-template-columns: 1fr; gap: 16px var(--grid-gap); padding: 32px 0; border-top: var(--line); }
+  .c-edu:last-child { border-bottom: var(--line); }
+  .c-edu .year { margin: 0; font-size: clamp(48px, 7cqw, 128px); font-weight: 500; line-height: 0.95; letter-spacing: -0.04em; }
+  .c-edu .year.ing { color: var(--color-accent); }
+  .c-edu .info { display: flex; flex-direction: column; gap: 8px; }
+  .c-edu ul li::before { content: '— '; color: var(--color-text-muted); }
+  @container (min-width: 1024px) {
+    .c-edu { grid-template-columns: repeat(10, minmax(0, 1fr)); align-items: end; }
+    .c-edu .year { grid-column: 1 / 6; }
+    .c-edu .info { grid-column: 6 / 11; }
+  }
+
+  .c-contact .say { margin: 0 0 var(--step); max-width: 20em; font-size: clamp(28px, 3.6cqw, 72px); font-weight: 500; line-height: 1.25; letter-spacing: -0.02em; }
+  .c-contact .say .dim { color: var(--color-border); }
+  .c-mail {
+    display: block;
+    padding: 24px 0;
+    border-top: var(--line-strong);
+    border-bottom: var(--line-strong);
+    font-size: clamp(32px, 8.4cqw, 160px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+    transition: color 260ms var(--ease-out-expo), padding 400ms var(--ease-out-expo);
+  }
+  .c-mail .arw { color: var(--color-accent); }
+  @media (hover: hover) { .c-mail:hover { color: var(--color-accent); padding-left: var(--step); } }
+  .c-sub { display: flex; flex-wrap: wrap; gap: 12px 32px; margin-top: 20px; }
+
+  /* 흑백을 뒤집은 띠 — 페이지의 끝을 확실히 알린다 */
+  .c-ft { padding: var(--step) var(--gutter) 24px; background: var(--color-text); color: var(--color-bg); }
+  .c-ft .label { color: inherit; opacity: 0.7; }
+  .c-ft .mark {
+    display: block;
+    margin: 0 0 var(--step);
+    font-size: 16.4cqw;
+    font-weight: 600;
+    line-height: 0.82;
+    letter-spacing: -0.05em;
+    white-space: nowrap;
+  }
+  .c-ft .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-top: 16px; border-top: 1px solid currentColor; }
+  .c-ft .row a { color: inherit; }
+  .c-ft .anno { background: var(--color-bg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site *, .site *::before, .site *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="toolbar" id="toolbar">
+  <h1>나머지 섹션 레이아웃</h1>
+  <div class="seg" role="group" aria-label="시안 고르기">
+    <button type="button" data-set="v" data-val="a" aria-pressed="true">A · 인덱스 표</button>
+    <button type="button" data-set="v" data-val="b" aria-pressed="false">B · 칸 나누기</button>
+    <button type="button" data-set="v" data-val="c" aria-pressed="false">C · 큰 글자</button>
+  </div>
+  <div class="seg" role="group" aria-label="테마">
+    <button type="button" data-set="theme" data-val="light" aria-pressed="true">라이트</button>
+    <button type="button" data-set="theme" data-val="dark" aria-pressed="false">다크</button>
+  </div>
+  <div class="seg" role="group" aria-label="화면 폭">
+    <button type="button" data-set="size" data-val="desktop" aria-pressed="true">데스크톱</button>
+    <button type="button" data-set="size" data-val="tablet" aria-pressed="false">태블릿 768</button>
+    <button type="button" data-set="size" data-val="mobile" aria-pressed="false">모바일 375</button>
+  </div>
+  <div class="seg" role="group" aria-label="설명 표시">
+    <button type="button" data-set="anno" data-val="on" aria-pressed="true">설명 켜기</button>
+    <button type="button" data-set="anno" data-val="off" aria-pressed="false">끄기</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="desc" id="desc" aria-live="polite"></section>
+
+  <div class="stage" id="stage" data-size="desktop">
+    <div class="site" id="site" data-theme="light">
+
+      <!-- ═══════════════════════════ 시안 A ═══════════════════════════ -->
+      <div class="v" data-v="a">
+        <header class="a-hd" data-hd>
+          <a href="#a-hero" class="logo">Portfolio</a>
+          <nav aria-label="주요 섹션 이동">
+            <ul>
+              <li><a href="#a-about"><span class="label no">01</span><span class="label">About</span></a></li>
+              <li><a href="#a-skills"><span class="label no">02</span><span class="label">Skills</span></a></li>
+              <li><a href="#a-projects"><span class="label no">03</span><span class="label">Projects</span></a></li>
+              <li><a href="#a-education"><span class="label no">04</span><span class="label">Education</span></a></li>
+              <li><a href="#a-contact"><span class="label no">05</span><span class="label">Contact</span></a></li>
+            </ul>
+          </nav>
+          <button type="button" class="tg" aria-label="테마 바꾸기">◐</button>
+          <button type="button" class="menu-btn" data-menu aria-expanded="false">Menu</button>
+          <div class="mpanel">
+            <ul>
+              <li><a href="#a-about">About <span class="label">01</span></a></li>
+              <li><a href="#a-skills">Skills <span class="label">02</span></a></li>
+              <li><a href="#a-projects">Projects <span class="label">03</span></a></li>
+              <li><a href="#a-education">Education <span class="label">04</span></a></li>
+              <li><a href="#a-contact">Contact <span class="label">05</span></a></li>
+            </ul>
+          </div>
+        </header>
+        <span class="anno" style="margin: 8px var(--gutter) 0">① 헤더 — 로고 왼쪽 2열 / 메뉴는 4~10열에 번호와 함께 고르게 펼침 / 토글 12열. 모바일은 Menu 버튼 → 줄 목록</span>
+
+        <div class="keep hero" id="a-hero" data-sec="hero"><strong>Hero</strong><span class="label">지금 그대로 유지</span></div>
+        <div class="keep" id="a-about" data-sec="about"><strong>(01) About</strong><span class="label">지금 그대로 유지</span></div>
+
+        <section class="sec" id="a-skills" data-sec="skills">
+          <div class="head">
+            <p class="label">(02) Skills</p>
+            <h2 class="title">쓸 줄 아는 도구</h2>
+            <p class="lead">면접에서 질문받아도 설명할 수 있는 것만 적었습니다.</p>
+          </div>
+          <span class="anno block">② 기술을 표 한 줄에 분류 하나씩 — 번호 1열 / 분류 2~4열 / 기술 이름 5~11열(카드 제목 크기) / 개수 12열</span>
+          <ol class="a-rows">
+            <li class="a-row rise"><span class="label c1">01</span><span class="label c2">Development</span><span class="label c4">03</span><p class="a-skill-items c3 wide">JavaScript <span class="sep">/</span> React <span class="sep">/</span> jQuery</p></li>
+            <li class="a-row rise"><span class="label c1">02</span><span class="label c2">Design</span><span class="label c4">03</span><p class="a-skill-items c3 wide">Figma <span class="sep">/</span> Photoshop <span class="sep">/</span> Illustrator</p></li>
+            <li class="a-row rise"><span class="label c1">03</span><span class="label c2">Motion &amp; 3D</span><span class="label c4">02</span><p class="a-skill-items c3 wide">After Effects <span class="sep">/</span> Blender</p></li>
+            <li class="a-row rise"><span class="label c1">04</span><span class="label c2">AI Tools</span><span class="label c4">03</span><p class="a-skill-items c3 wide">Claude Code <span class="sep">/</span> Codex <span class="sep">/</span> omp</p></li>
+            <li class="a-row rise"><span class="label c1">05</span><span class="label c2">Tooling</span><span class="label c4">01</span><p class="a-skill-items c3 wide">Git</p></li>
+          </ol>
+        </section>
+
+        <div class="keep" id="a-projects" data-sec="projects"><strong>(03) Projects</strong><span class="label">지금 그대로 유지</span></div>
+
+        <section class="sec" id="a-education" data-sec="education">
+          <div class="head">
+            <p class="label">(04) Education &amp; Activities</p>
+            <h2 class="title">배운 곳과 한 일</h2>
+          </div>
+          <span class="anno block">③ Skills와 같은 표 모양 — 기간 1~3열 / 과정·기관 4~8열 / 한 일 9~12열. 최신이 위(역순, FR-E1)</span>
+          <ol class="a-rows">
+            <li class="a-row a-edu rise">
+              <span class="label c1"><span class="accent">●</span> 2025.09 — 현재</span>
+              <div class="who c2"><h3 class="h3">TODO: 부트캠프·교육과정명</h3><p class="sm muted">TODO: 기관명</p></div>
+              <ul class="sm c3"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+            </li>
+            <li class="a-row a-edu rise">
+              <span class="label c1">2021.03 — 2025.02</span>
+              <div class="who c2"><h3 class="h3">TODO: 학교/전공 또는 스터디명</h3><p class="sm muted">TODO: 기관명</p></div>
+              <ul class="sm c3"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+            </li>
+          </ol>
+        </section>
+
+        <section class="sec" id="a-contact" data-sec="contact">
+          <div class="head">
+            <p class="label">(05) Contact</p>
+            <h2 class="title">연락 주세요</h2>
+            <p class="lead">채용·협업 제안은 메일로 받습니다.</p>
+          </div>
+          <span class="anno block">④ 이메일 주소 자체를 화면 폭만큼 크게 — 누르면 메일 앱이 열림. 밑줄은 마우스를 올리면 그어짐</span>
+          <a href="mailto:you@example.com" class="a-mail ul">you@example.com<span class="arw" aria-hidden="true">↗</span></a>
+          <div class="a-links">
+            <a href="#" class="rise"><span class="row"><span class="h3">GitHub</span><span class="accent">↗</span></span><span class="label">github.com/R00neyj</span></a>
+            <a href="#" class="rise"><span class="row"><span class="h3">Blog</span><span class="accent">↗</span></span><span class="label">아직 글이 없습니다</span></a>
+            <button type="button" class="rise" data-copy><span class="row"><span class="h3">주소 복사</span><span class="accent">⧉</span></span><span class="label" data-copy-msg>메일 앱이 없을 때 <span class="anno">선택</span></span></button>
+          </div>
+        </section>
+
+        <footer class="a-ft">
+          <span class="label">© 2026 Portfolio</span>
+          <a href="#" class="label ul">이 사이트의 소스 코드 ↗</a>
+          <a href="#a-hero" class="label ul">맨 위로 ↑</a>
+        </footer>
+        <span class="anno" style="margin: 0 var(--gutter) 16px">⑤ 푸터 — 3칸으로 나눠 왼쪽·가운데·오른쪽에 하나씩</span>
+      </div>
+
+      <!-- ═══════════════════════════ 시안 B ═══════════════════════════ -->
+      <div class="v" data-v="b" hidden>
+        <header class="b-hd" data-hd>
+          <a href="#b-hero" class="logo"><span class="mark" aria-hidden="true">P</span>Portfolio</a>
+          <nav aria-label="주요 섹션 이동">
+            <ul>
+              <li><a href="#b-about"><span class="label no">01</span><span class="label">About</span></a></li>
+              <li><a href="#b-skills"><span class="label no">02</span><span class="label">Skills</span></a></li>
+              <li><a href="#b-projects"><span class="label no">03</span><span class="label">Projects</span></a></li>
+              <li><a href="#b-education"><span class="label no">04</span><span class="label">Education</span></a></li>
+              <li><a href="#b-contact"><span class="label no">05</span><span class="label">Contact</span></a></li>
+            </ul>
+          </nav>
+          <div class="cell"><button type="button" class="tg" aria-label="테마 바꾸기">◐</button></div>
+          <button type="button" class="menu-btn" data-menu aria-expanded="false">Menu</button>
+          <div class="mpanel">
+            <ul>
+              <li><a href="#b-about"><span class="label">01</span>About</a></li>
+              <li><a href="#b-skills"><span class="label">02</span>Skills</a></li>
+              <li><a href="#b-projects"><span class="label">03</span>Projects</a></li>
+              <li><a href="#b-education"><span class="label">04</span>Education</a></li>
+              <li><a href="#b-contact"><span class="label">05</span>Contact</a></li>
+            </ul>
+          </div>
+        </header>
+        <span class="anno" style="margin: 8px var(--gutter) 0">① 헤더를 1px 선으로 칸칸이 나눔 — 지금 보고 있는 섹션 칸은 흑백이 뒤집힘. 모바일은 2열 칸 메뉴</span>
+
+        <div class="keep hero" id="b-hero" data-sec="hero"><strong>Hero</strong><span class="label">지금 그대로 유지</span></div>
+        <div class="keep" id="b-about" data-sec="about"><strong>(01) About</strong><span class="label">지금 그대로 유지</span></div>
+
+        <section class="sec" id="b-skills" data-sec="skills">
+          <div class="head">
+            <p class="label">(02) Skills</p>
+            <h2 class="title">쓸 줄 아는 도구</h2>
+            <p class="lead">면접에서 질문받아도 설명할 수 있는 것만 적었습니다.</p>
+          </div>
+          <span class="anno block">② 분류 5개 + 요약 1칸 = 6칸 → 데스크톱 3×2, 태블릿 2×3, 모바일 1열. 칸 수가 딱 떨어져 빈칸이 없음</span>
+          <ul class="b-cells b-skills">
+            <li class="b-skill rise"><div class="meta"><span class="label">01</span><span class="label">03</span></div><h3 class="h3">Development</h3><div class="tags"><span class="tag">JavaScript</span><span class="tag">React</span><span class="tag">jQuery</span></div></li>
+            <li class="b-skill rise"><div class="meta"><span class="label">02</span><span class="label">03</span></div><h3 class="h3">Design</h3><div class="tags"><span class="tag">Figma</span><span class="tag">Photoshop</span><span class="tag">Illustrator</span></div></li>
+            <li class="b-skill rise"><div class="meta"><span class="label">03</span><span class="label">02</span></div><h3 class="h3">Motion &amp; 3D</h3><div class="tags"><span class="tag">After Effects</span><span class="tag">Blender</span></div></li>
+            <li class="b-skill rise"><div class="meta"><span class="label">04</span><span class="label">03</span></div><h3 class="h3">AI Tools</h3><div class="tags"><span class="tag">Claude Code</span><span class="tag">Codex</span><span class="tag">omp</span></div></li>
+            <li class="b-skill rise"><div class="meta"><span class="label">05</span><span class="label">01</span></div><h3 class="h3">Tooling</h3><div class="tags"><span class="tag">Git</span></div></li>
+            <li class="b-skill sum rise"><span class="label">Total <span class="anno">요약 칸 — 데이터 개수로 자동 계산</span></span><div><p class="big">12</p><p class="label" style="margin-top:8px">Tools · 5 Categories</p></div></li>
+          </ul>
+        </section>
+
+        <div class="keep" id="b-projects" data-sec="projects"><strong>(03) Projects</strong><span class="label">지금 그대로 유지</span></div>
+
+        <section class="sec" id="b-education" data-sec="education">
+          <div class="head">
+            <p class="label">(04) Education &amp; Activities</p>
+            <h2 class="title">배운 곳과 한 일</h2>
+          </div>
+          <span class="anno block">③ DESIGN §7.2 "카드 2장 = 2열 엇갈림" — 2번 카드만 계단 2칸 내림. 시작 연도를 큰 숫자로</span>
+          <ol class="b-edu">
+            <li class="b-card rise">
+              <div class="meta"><span class="label">2025.09 — 현재</span><span class="label badge">진행 중</span></div>
+              <p class="year">2025</p>
+              <h3 class="h3">TODO: 부트캠프·교육과정명</h3>
+              <p class="sm muted">TODO: 기관명</p>
+              <ul class="sm"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+            </li>
+            <li class="b-card rise">
+              <div class="meta"><span class="label">2021.03 — 2025.02</span><span class="label">02</span></div>
+              <p class="year">2021</p>
+              <h3 class="h3">TODO: 학교/전공 또는 스터디명</h3>
+              <p class="sm muted">TODO: 기관명</p>
+              <ul class="sm"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+            </li>
+          </ol>
+        </section>
+
+        <section class="sec b-contact" id="b-contact" data-sec="contact">
+          <span class="anno block">④ 회색 띠(--color-surface) 위에 3칸 — 제목 / 메일 버튼 / 외부 링크. 채운 오렌지 버튼은 사이트에서 여기 하나뿐</span>
+          <div class="b-cells b-ct">
+            <div class="rise">
+              <p class="label">(05) Contact</p>
+              <h2 class="title">연락 주세요</h2>
+              <p class="sm muted" style="margin-top:auto">채용·협업 제안은 메일로 받습니다.</p>
+            </div>
+            <div class="rise">
+              <p class="label">Email</p>
+              <p class="h3">you@example.com</p>
+              <div class="btns">
+                <a href="mailto:you@example.com" class="btn fill">메일 보내기 →</a>
+                <button type="button" class="btn" data-copy><span data-copy-msg>주소 복사</span></button>
+              </div>
+            </div>
+            <div class="rise">
+              <p class="label">Elsewhere</p>
+              <ul class="links" style="margin-top:auto">
+                <li><a href="#"><span class="h3">GitHub</span><span class="accent">↗</span></a></li>
+                <li><a href="#"><span class="h3">Blog <span class="label">아직 글이 없습니다</span></span><span class="accent">↗</span></a></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <footer class="b-cells b-ft">
+          <span class="label">© 2026 Portfolio</span>
+          <a href="#" class="label">이 사이트의 소스 코드 ↗</a>
+          <a href="#b-hero" class="label">맨 위로 ↑</a>
+        </footer>
+      </div>
+
+      <!-- ═══════════════════════════ 시안 C ═══════════════════════════ -->
+      <div class="v" data-v="c" hidden>
+        <header class="c-hd" data-hd>
+          <a href="#c-hero" class="logo">Portfolio</a>
+          <span class="label now" data-now>Hero</span>
+          <div class="right">
+            <button type="button" class="tg" aria-label="테마 바꾸기">◐</button>
+            <button type="button" class="menu-btn" data-menu aria-expanded="false">Menu</button>
+          </div>
+          <div class="mpanel">
+            <ul>
+              <li><a href="#c-about"><span class="label">01</span>About</a></li>
+              <li><a href="#c-skills"><span class="label">02</span>Skills</a></li>
+              <li><a href="#c-projects"><span class="label">03</span>Projects</a></li>
+              <li><a href="#c-education"><span class="label">04</span>Education</a></li>
+              <li><a href="#c-contact"><span class="label">05</span>Contact</a></li>
+            </ul>
+          </div>
+        </header>
+        <span class="anno" style="margin: 8px var(--gutter) 0">① 헤더는 로고 / 지금 섹션 이름(가운데) / Menu만. 메뉴를 열면 화면 전체에 큰 글자 목록 — 데스크톱도 같은 방식</span>
+
+        <div class="keep hero" id="c-hero" data-sec="hero"><strong>Hero</strong><span class="label">지금 그대로 유지</span></div>
+        <div class="keep" id="c-about" data-sec="about"><strong>(01) About</strong><span class="label">지금 그대로 유지 (C시안 — 왼쪽 고정 라벨 + 큰 문장)</span></div>
+
+        <section class="sec" id="c-skills" data-sec="skills">
+          <div class="c-wrap">
+            <div class="label-col">
+              <p class="label">(02) Skills</p>
+              <h2 class="h3">쓸 줄 아는 도구</h2>
+              <span class="anno" style="margin-top:12px">② About C와 같은 뼈대 — 왼쪽 2열 고정 라벨</span>
+            </div>
+            <div class="body-col">
+              <span class="anno block">③ 기술 이름을 섹션 제목만큼 크게 이어 씀. 단어에 마우스를 올리면 오렌지로 튀어 오름</span>
+              <div class="c-group rise"><span class="label">01 — Development · 3</span><p class="c-words"><span class="w">JavaScript</span> <span class="sep">/</span> <span class="w">React</span> <span class="sep">/</span> <span class="w">jQuery</span></p></div>
+              <div class="c-group rise"><span class="label">02 — Design · 3</span><p class="c-words"><span class="w">Figma</span> <span class="sep">/</span> <span class="w">Photoshop</span> <span class="sep">/</span> <span class="w">Illustrator</span></p></div>
+              <div class="c-group rise"><span class="label">03 — Motion &amp; 3D · 2</span><p class="c-words"><span class="w">After Effects</span> <span class="sep">/</span> <span class="w">Blender</span></p></div>
+              <div class="c-group rise"><span class="label">04 — AI Tools · 3</span><p class="c-words"><span class="w">Claude Code</span> <span class="sep">/</span> <span class="w">Codex</span> <span class="sep">/</span> <span class="w">omp</span></p></div>
+              <div class="c-group rise"><span class="label">05 — Tooling · 1</span><p class="c-words"><span class="w">Git</span></p></div>
+            </div>
+          </div>
+        </section>
+
+        <div class="keep" id="c-projects" data-sec="projects"><strong>(03) Projects</strong><span class="label">지금 그대로 유지</span></div>
+
+        <section class="sec" id="c-education" data-sec="education">
+          <div class="c-wrap">
+            <div class="label-col">
+              <p class="label">(04) Education</p>
+              <h2 class="h3">배운 곳과 한 일</h2>
+            </div>
+            <div class="body-col">
+              <span class="anno block">④ 연도를 아주 크게 왼쪽에, 내용은 오른쪽 아래에 맞춤. 지금 다니는 곳은 연도가 오렌지</span>
+              <div class="c-edu rise">
+                <p class="year ing">2025—</p>
+                <div class="info">
+                  <span class="label">2025.09 — 현재</span>
+                  <h3 class="h3">TODO: 부트캠프·교육과정명</h3>
+                  <p class="sm muted">TODO: 기관명</p>
+                  <ul class="sm"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+                </div>
+              </div>
+              <div class="c-edu rise">
+                <p class="year">2021—25</p>
+                <div class="info">
+                  <span class="label">2021.03 — 2025.02</span>
+                  <h3 class="h3">TODO: 학교/전공 또는 스터디명</h3>
+                  <p class="sm muted">TODO: 기관명</p>
+                  <ul class="sm"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sec c-contact" id="c-contact" data-sec="contact">
+          <p class="label" style="margin-bottom:24px">(05) Contact</p>
+          <span class="anno block">⑤ 머리 대신 한 문장으로 말을 걸고, 바로 아래에 화면 폭 가득한 이메일 — 마우스를 올리면 오른쪽으로 밀리며 오렌지</span>
+          <p class="say rise">좋은 제품을 <span class="dim">함께</span> 만들 팀을 찾고 있습니다.</p>
+          <a href="mailto:you@example.com" class="c-mail">you@example.com <span class="arw" aria-hidden="true">↗</span></a>
+          <div class="c-sub">
+            <a href="#" class="label ul">GitHub ↗</a>
+            <a href="#" class="label ul">Blog ↗ <span class="muted">— 아직 글이 없습니다</span></a>
+            <button type="button" class="label ul" style="border:0;background:none;padding:0" data-copy><span data-copy-msg>주소 복사 ⧉</span></button>
+          </div>
+        </section>
+
+        <footer class="c-ft">
+          <span class="anno block">⑥ 흑백을 뒤집은 띠 + 화면 폭 가득한 로고 글자 — "여기가 끝" 신호</span>
+          <span class="mark" aria-hidden="true">PORTFOLIO</span>
+          <div class="row">
+            <span class="label">© 2026 Portfolio</span>
+            <a href="#" class="label ul">이 사이트의 소스 코드 ↗</a>
+            <a href="#c-hero" class="label ul">맨 위로 ↑</a>
+          </div>
+        </footer>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const DESC = {
+    a: {
+      title: '시안 A — 인덱스 표 (마커빌)',
+      sub: '모든 섹션을 "1px 선으로 나눈 표"로 통일합니다. 가장 차분하고 정보가 한눈에 들어오는 안입니다.',
+      rows: [
+        ['헤더', '메뉴를 번호와 함께 12열 위에 고르게 펼침. 지금 섹션은 오렌지.'],
+        ['Skills', '분류 하나 = 표 한 줄. 기술 이름을 카드 제목 크기로 "/"로 이어 씀.'],
+        ['Education', 'Skills와 똑같은 표 — 기간 / 과정 / 한 일.'],
+        ['Contact', '이메일 주소를 화면 폭만큼 크게. 아래에 링크 3칸.'],
+        ['푸터', '저작권 / 소스 코드 / 맨 위로, 3칸.'],
+      ],
+      note: '장점: 구현이 가장 단순하고 항목이 늘어도 줄만 추가하면 됨. 주의: 세 안 중 가장 얌전해서 Hero·About의 큰 글자에 비해 뒤쪽이 심심해 보일 수 있음.',
+    },
+    b: {
+      title: '시안 B — 칸 나누기 (투모어스탭 3분할)',
+      sub: '헤더부터 푸터까지 모든 것을 1px 선으로 칸칸이 나눈 박스 그리드입니다. "3의 리듬"이 가장 강하게 보이는 안입니다.',
+      rows: [
+        ['헤더', '로고·메뉴·토글이 각각 칸. 지금 섹션 칸은 흑백이 뒤집힘.'],
+        ['Skills', '분류 5칸 + 요약(총 개수) 1칸 = 3×2 타일.'],
+        ['Education', '카드 2장, 2번 카드만 계단 2칸 내림 (§7.2 규칙 그대로).'],
+        ['Contact', '회색 띠 위 3칸 — 제목 / 메일 버튼 / 외부 링크.'],
+        ['푸터', '헤더와 같은 칸 나누기로 닫음.'],
+      ],
+      note: '장점: Projects의 계단 카드와 같은 언어라 사이트 전체가 한 벌로 보임. 주의: 선이 많아 화면이 빽빽해 보일 수 있고, 헤더 메뉴 5칸은 1024px 근처에서 글자가 좁아짐.',
+    },
+    c: {
+      title: '시안 C — 큰 글자 (About C 이어 가기)',
+      sub: '이미 고른 About C(왼쪽 고정 라벨 + 큰 문장)의 뼈대를 나머지 섹션에도 이어 씁니다. 인상이 가장 강한 안입니다.',
+      rows: [
+        ['헤더', '로고 / 지금 섹션 이름 / Menu만. 메뉴는 화면 전체를 덮는 큰 글자 목록.'],
+        ['Skills', '기술 이름을 섹션 제목 크기로. 단어 호버 시 오렌지로 튀어 오름.'],
+        ['Education', '연도를 아주 크게, 지금 다니는 곳만 오렌지.'],
+        ['Contact', '한 문장 + 화면 폭 가득한 이메일.'],
+        ['푸터', '흑백을 뒤집은 띠에 화면 폭 가득한 PORTFOLIO 글자.'],
+      ],
+      note: '장점: Hero(큰 연도 제목)·About C와 같은 목소리라 가장 일관됨. 주의: 데스크톱에서도 메뉴를 한 번 눌러야 섹션 목록이 보임(대신 지금 위치는 헤더 가운데 표시). 스크롤 길이가 가장 김.',
+    },
+  }
+
+  const site = document.getElementById('site')
+  const stage = document.getElementById('stage')
+  const descEl = document.getElementById('desc')
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const state = {
+    v: 'a',
+    theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    size: 'desktop',
+    anno: 'on',
+  }
+
+  const currentView = () => document.querySelector(`.v[data-v="${state.v}"]`)
+
+  function renderDesc() {
+    const d = DESC[state.v]
+    descEl.innerHTML =
+      `<h2>${d.title}</h2><p>${d.sub}</p>` +
+      `<dl>${d.rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` +
+      `<p class="note">${d.note}</p>`
+  }
+
+  function apply() {
+    document.querySelectorAll('[data-set]').forEach((b) => b.setAttribute('aria-pressed', String(state[b.dataset.set] === b.dataset.val)))
+    document.querySelectorAll('.v[data-v]').forEach((s) => (s.hidden = s.dataset.v !== state.v))
+    site.dataset.theme = state.theme
+    stage.dataset.size = state.size
+    document.body.dataset.anno = state.anno
+    document.querySelectorAll('[data-hd]').forEach(closeMenu)
+    renderDesc()
+    playRise()
+    spy()
+  }
+
+  document.getElementById('toolbar').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-set]')
+    if (!b) return
+    state[b.dataset.set] = b.dataset.val
+    apply()
+  })
+
+  // 테마 토글(사이트 안) — 도구 막대의 테마 버튼과 같은 상태를 바꾼다
+  site.addEventListener('click', (e) => {
+    if (e.target.closest('.tg')) {
+      state.theme = state.theme === 'dark' ? 'light' : 'dark'
+      apply()
+    }
+  })
+
+  // 메뉴 열고 닫기
+  function closeMenu(hd) {
+    hd.classList.remove('open')
+    const btn = hd.querySelector('[data-menu]')
+    btn.setAttribute('aria-expanded', 'false')
+    btn.textContent = 'Menu'
+  }
+  document.querySelectorAll('[data-hd]').forEach((hd) => {
+    const btn = hd.querySelector('[data-menu]')
+    btn.addEventListener('click', () => {
+      const open = !hd.classList.contains('open')
+      hd.classList.toggle('open', open)
+      btn.setAttribute('aria-expanded', String(open))
+      btn.textContent = open ? 'Close' : 'Menu'
+    })
+    hd.querySelectorAll('.mpanel a').forEach((a) => a.addEventListener('click', () => closeMenu(hd)))
+  })
+  addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('[data-hd]').forEach(closeMenu)
+  })
+
+  // 메뉴 링크 → 헤더 높이만큼 띄워서 이동
+  site.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]')
+    if (!a || a.getAttribute('href') === '#') { if (a) e.preventDefault(); return }
+    const target = document.querySelector(a.getAttribute('href'))
+    if (!target) return
+    e.preventDefault()
+    const hd = currentView().querySelector('[data-hd]')
+    const offset = toolbarH() + hd.offsetHeight
+    scrollTo({ top: target.getBoundingClientRect().top + scrollY - offset + 1, behavior: reduce ? 'auto' : 'smooth' })
+  })
+
+  // 이메일 주소 복사
+  document.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const msg = btn.querySelector('[data-copy-msg]')
+      const before = msg.innerHTML
+      try {
+        await navigator.clipboard.writeText('you@example.com')
+        msg.textContent = '복사했습니다 ✓'
+      } catch {
+        msg.textContent = '복사 실패 — 주소를 직접 선택하세요'
+      }
+      setTimeout(() => (msg.innerHTML = before), 1600)
+    })
+  })
+
+  // 스크롤 스파이: 헤더 아래를 지난 마지막 섹션을 "지금 섹션"으로
+  const NAMES = { hero: 'Hero', about: '(01) About', skills: '(02) Skills', projects: '(03) Projects', education: '(04) Education', contact: '(05) Contact' }
+  function spy() {
+    const view = currentView()
+    const line = toolbarH() + view.querySelector('[data-hd]').offsetHeight + 8
+    let now = 'hero'
+    view.querySelectorAll('[data-sec]').forEach((s) => {
+      if (s.getBoundingClientRect().top <= line) now = s.dataset.sec
+    })
+    view.querySelectorAll('nav a').forEach((a) => {
+      const on = a.getAttribute('href') === `#${state.v}-${now}`
+      if (on) a.setAttribute('aria-current', 'true')
+      else a.removeAttribute('aria-current')
+    })
+    const nowEl = view.querySelector('[data-now]')
+    if (nowEl) nowEl.textContent = NAMES[now]
+  }
+  addEventListener('scroll', spy, { passive: true })
+
+  // 등장 모션: 시안을 바꿀 때마다 다시 재생 (실제 사이트에서는 화면에 들어올 때 한 번만)
+  function playRise() {
+    if (reduce) return
+    const items = currentView().querySelectorAll('.rise')
+    items.forEach((el) => el.classList.add('is-hidden'))
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      items.forEach((el, i) => {
+        el.style.transitionDelay = `${(i % 6) * 100}ms`
+        el.classList.remove('is-hidden')
+      })
+    }))
+  }
+
+  // 도구 막대 높이를 재서 사이트 헤더가 그 바로 아래에 붙게 한다
+  const toolbar = document.getElementById('toolbar')
+  const toolbarH = () => toolbar.offsetHeight
+  function measure() {
+    document.documentElement.style.setProperty('--tb', `${toolbarH()}px`)
+  }
+  addEventListener('resize', () => { measure(); spy() })
+
+  measure()
+  apply()
+</script>
+</body>
+</html>

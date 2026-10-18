@@ -1,0 +1,826 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>전체 페이지 조합안</title>
+<style>
+  /* ───────────── 와이어프레임 바깥(도구 화면) ───────────── */
+  :root {
+    --chrome-bg: #eef0f3;
+    --chrome-panel: #ffffff;
+    --chrome-text: #14161a;
+    --chrome-muted: #5b6472;
+    --chrome-border: #d5d9e0;
+    --chrome-active: #14161a;
+    --chrome-active-text: #ffffff;
+    --anno: #d93a3f;
+    --tb: 0px; /* 도구 막대 높이 — JS가 채운다. 사이트 헤더가 그 아래에 붙는다 */
+    --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --chrome-bg: #16181d;
+      --chrome-panel: #1e2128;
+      --chrome-text: #e8eaed;
+      --chrome-muted: #9aa1ac;
+      --chrome-border: #2e333c;
+      --chrome-active: #e8eaed;
+      --chrome-active-text: #14161a;
+      --anno: #f0595e;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--chrome-bg);
+    color: var(--chrome-text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 24px;
+    padding: 12px 16px;
+    background: var(--chrome-panel);
+    border-bottom: 1px solid var(--chrome-border);
+  }
+  .toolbar h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .seg { display: inline-flex; flex-wrap: wrap; max-width: 100%; border: 1px solid var(--chrome-border); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 0;
+    border-right: 1px solid var(--chrome-border);
+    background: transparent;
+    color: var(--chrome-text);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--chrome-active); color: var(--chrome-active-text); }
+  .seg button:focus-visible { outline: 2px solid var(--anno); outline-offset: 2px; }
+
+  .wrap { padding: 20px 16px 40vh; }
+
+  .desc {
+    max-width: 1280px;
+    margin: 0 auto 16px;
+    padding: 16px 20px;
+    border: 1px solid var(--chrome-border);
+    border-radius: 12px;
+    background: var(--chrome-panel);
+  }
+  .desc h2 { margin: 0 0 4px; font-size: 15px; }
+  .desc p { margin: 0 0 8px; color: var(--chrome-muted); }
+  .desc dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+  .desc dt { font-weight: 600; }
+  .desc dd { margin: 0; }
+
+  .stage {
+    container-type: inline-size;
+    max-width: 1280px;
+    margin: 0 auto;
+    /* hidden 대신 clip — 안쪽 sticky 헤더가 계속 동작한다 */
+    overflow: clip;
+    border: 1px solid var(--chrome-border);
+    border-radius: 12px;
+    transition: max-width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .stage[data-size="tablet"] { max-width: 768px; }
+  .stage[data-size="mobile"] { max-width: 375px; }
+
+  .anno {
+    display: inline-block;
+    padding: 1px 6px;
+    border: 1px dashed var(--anno);
+    color: var(--anno);
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0;
+    text-transform: none;
+    line-height: 1.5;
+    vertical-align: middle;
+  }
+  .anno.block { display: block; width: fit-content; margin: 0 0 12px; }
+  body[data-anno="off"] .anno { display: none; }
+
+  /* ───────────── 사이트 안쪽 — DESIGN.md 토큰 ───────────── */
+  .site {
+    --color-bg: #FFFFFF;
+    --color-surface: #F2F2F2;
+    --color-text: #111111;
+    --color-text-muted: #555555;
+    --color-border: #D2D2D2;
+    --color-border-strong: #111111;
+    --color-accent: #AD522E;
+    --color-accent-bg: #AD522E;
+    --color-accent-contrast: #FFFFFF;
+    --color-mascot: #D97757;
+
+    --font-size-display: clamp(48px, 12cqw, 160px);
+    --font-size-h2: clamp(36px, 4.4cqw, 88px);
+    --font-size-h3: clamp(22px, 1.7cqw, 32px);
+    --font-size-lg: 20px;
+    --font-size-base: 16px;
+    --font-size-sm: 14px;
+    --font-size-label: 12px;
+
+    --grid-gap: clamp(12px, 1.25cqw, 24px);
+    --gutter: clamp(16px, 3.2cqw, 56px);
+    --section-space: clamp(64px, 8cqw, 160px);
+    --step: clamp(22px, 3.2cqw, 64px);
+    --line: 1px solid var(--color-border);
+    --line-strong: 1px solid var(--color-border-strong);
+    --radius-pill: 999px;
+    --header-h: 57px;
+
+    --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.3, 1.6, 0.5, 1);
+
+    position: relative;
+    background: var(--color-bg);
+    color: var(--color-text);
+    transition: background 680ms var(--ease-out-soft), color 680ms var(--ease-out-soft);
+  }
+  .site[data-theme="dark"] {
+    --color-bg: #111111;
+    --color-surface: #191919;
+    --color-text: #FFFFFF;
+    --color-text-muted: #A3A3A3;
+    --color-border: #2E2E2E;
+    --color-border-strong: #FFFFFF;
+    --color-accent: #D97757;
+    --color-accent-bg: #D97757;
+    --color-accent-contrast: #111111;
+  }
+
+  .site a { color: inherit; text-decoration: none; }
+  .site button { font: inherit; color: inherit; cursor: pointer; }
+  .site :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+  .site ul, .site ol { margin: 0; padding: 0; list-style: none; }
+  .site p { margin: 0; }
+
+  .sec { padding: var(--section-space) var(--gutter); border-top: var(--line); }
+
+  .label {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  .title { margin: 0; font-size: var(--font-size-h2); font-weight: 500; line-height: 1.1; letter-spacing: -0.02em; }
+  .h3 { margin: 0; font-size: var(--font-size-h3); font-weight: 500; line-height: 1.25; letter-spacing: -0.01em; }
+  .txt { font-size: var(--font-size-base); line-height: 1.6; }
+  .sm { font-size: var(--font-size-sm); line-height: 1.6; }
+  .muted { color: var(--color-text-muted); }
+  .accent { color: var(--color-accent); }
+
+  /* §7.1 섹션 머리 (Education) */
+  .head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px var(--grid-gap);
+    margin-bottom: calc(var(--step) * 2);
+  }
+  @container (min-width: 1024px) {
+    .head { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .head > * { grid-column: 1 / -1; }
+    .head .title { grid-column: 1 / 8; }
+  }
+
+  /* About · Skills 공통 뼈대: 왼쪽 2열 고정 라벨 + 오른쪽 10열 본문 */
+  .side-wrap .label-col { margin-bottom: 32px; }
+  .side-wrap .label-col .h3 { margin-top: 12px; }
+  @container (min-width: 1024px) {
+    .side-wrap { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 var(--grid-gap); }
+    .side-wrap .label-col { grid-column: 1 / 3; position: sticky; top: calc(var(--tb) + var(--header-h) + 32px); align-self: start; }
+    .side-wrap .body-col { grid-column: 3 / 13; }
+  }
+
+  /* 텍스트 링크 밑줄 — 왼쪽에서 오른쪽으로 (§8.3) */
+  .ul {
+    background: linear-gradient(currentColor, currentColor) left bottom / 0 1px no-repeat;
+    transition: background-size 260ms var(--ease-out-expo);
+  }
+  @media (hover: hover) { .ul:hover { background-size: 100% 1px; } }
+  .ul:focus-visible { background-size: 100% 1px; }
+
+  .tg {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border: var(--line-strong);
+    border-radius: var(--radius-pill);
+    background: transparent;
+    font-size: 16px;
+    transition: transform 200ms var(--ease-bounce);
+  }
+  @media (hover: hover) { .tg:hover { transform: scale(1.12); } }
+
+  /* 등장 모션 (§8.5) — 화면에 들어올 때 한 번만. 숨김 클래스는 JS가 붙인다 */
+  .rise { transition: transform 800ms var(--ease-out-soft), opacity 800ms var(--ease-out-soft); }
+  .rise.is-hidden { opacity: 0; transform: translateY(28px); }
+
+  /* ═══════════════════════ 헤더 — B(칸 나누기) + C(지금 섹션 · 큰 글자 메뉴) ═══════════════════════ */
+  .hd {
+    position: sticky;
+    top: var(--tb);
+    z-index: 5;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 1px;
+    background: var(--color-border);
+    border-bottom: var(--line);
+  }
+  .hd > .cell { display: flex; align-items: center; min-height: 56px; background: var(--color-bg); }
+  .hd .logo { gap: 10px; padding: 0 var(--gutter); font-weight: 600; }
+  .hd .logo .mark { display: inline-grid; place-items: center; width: 28px; height: 28px; background: var(--color-text); color: var(--color-bg); font-size: 13px; }
+  .hd .now { display: none; padding: 0 20px; }
+  .hd .now::before { content: '●'; margin-right: 8px; color: var(--color-accent); }
+  .hd .tgc { justify-content: center; padding: 0 16px; }
+  .hd .menu-btn {
+    min-width: 88px;
+    padding: 0 20px;
+    border: 0;
+    font-size: var(--font-size-label);
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .hd .menu-btn[aria-expanded="true"] { background: var(--color-text); color: var(--color-bg); }
+
+  .hd nav { display: none; }
+  .hd nav ul { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; height: 100%; background: var(--color-border); }
+  .hd nav a {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+    height: 100%;
+    padding: 0 16px;
+    background: var(--color-bg);
+    transition: background 260ms var(--ease-out-expo), color 260ms var(--ease-out-expo);
+  }
+  .hd nav a .label { color: inherit; }
+  .hd nav a .no { color: var(--color-text-muted); font-size: 11px; }
+  .hd nav a[aria-current] { background: var(--color-text); color: var(--color-bg); }
+  .hd nav a[aria-current] .no { color: inherit; opacity: 0.7; }
+  @media (hover: hover) { .hd nav a:not([aria-current]):hover { background: var(--color-surface); } }
+
+  /* 큰 글자 메뉴(C) — 헤더 바로 아래 화면을 덮는다 */
+  .mpanel {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    height: calc(100vh - var(--tb) - var(--header-h));
+    padding: var(--step) var(--gutter);
+    overflow: auto;
+    background: var(--color-bg);
+    border-top: var(--line);
+  }
+  .hd.open .mpanel { display: block; }
+  .mpanel ul { border-top: var(--line); }
+  .mpanel a {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: var(--line);
+    font-size: var(--font-size-h2);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    transition: color 260ms var(--ease-out-expo), padding 400ms var(--ease-out-expo);
+  }
+  .mpanel a .label { min-width: 2.5em; }
+  .mpanel a[aria-current] { color: var(--color-accent); }
+  @media (hover: hover) { .mpanel a:hover { color: var(--color-accent); padding-left: var(--step); } }
+
+  @container (min-width: 768px) {
+    .hd { grid-template-columns: 1fr 1fr auto auto; }
+    .hd .now { display: flex; }
+  }
+  @container (min-width: 1024px) {
+    .hd { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+    .hd .logo { grid-column: 1 / 4; }
+    .hd nav { display: block; grid-column: 4 / 12; }
+    .hd .tgc { grid-column: 12; }
+    .hd .now, .hd .menu-btn, .hd .mpanel { display: none !important; }
+  }
+
+  /* ═══════════════════════ Hero — 지금 그대로 ═══════════════════════ */
+  .hero {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: min(720px, calc(100vh - var(--tb) - var(--header-h)));
+    overflow: hidden;
+  }
+  /* Claw'd 3D 자리 — 실제 사이트에서는 three.js 장면이 깔린다 */
+  .hero .scene {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center end;
+    padding-right: 8%;
+    pointer-events: none;
+  }
+  .hero .clawd {
+    display: grid;
+    place-items: center;
+    width: clamp(160px, 30cqw, 380px);
+    aspect-ratio: 1;
+    border: 1px dashed var(--color-mascot);
+    background:
+      linear-gradient(to top right, transparent calc(50% - 0.5px), var(--color-mascot) 50%, transparent calc(50% + 0.5px)),
+      linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--color-mascot) 50%, transparent calc(50% + 0.5px));
+    color: var(--color-mascot);
+    font-size: var(--font-size-sm);
+    opacity: 0.55;
+  }
+  .hero .inner {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 64px var(--gutter) 24px;
+  }
+  .hero .who { margin-bottom: 16px; color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: 500; letter-spacing: 0.04em; }
+  .hero h1 { margin: 0; font-size: var(--font-size-display); font-weight: 600; line-height: 1; letter-spacing: -0.03em; }
+  .hero h1 span { display: block; }
+  .hero .tagline { margin-top: 32px; font-size: var(--font-size-base); }
+  .hero .tagline span { display: inline-block; }
+  .hero .cue { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding-bottom: 24px; color: var(--color-text-muted); font-size: var(--font-size-sm); font-weight: 500; letter-spacing: 0.08em; }
+  @container (min-width: 768px) { .hero .tagline { font-size: var(--font-size-lg); } }
+  @container (max-width: 767px) { .hero .scene { place-items: end center; padding: 0 0 72px; } }
+
+  /* ═══════════════════════ About — 지금 그대로 (C시안) ═══════════════════════ */
+  .statement { margin-bottom: calc(var(--step) * 2); font-size: clamp(28px, 3.6cqw, 72px); font-weight: 500; line-height: 1.25; letter-spacing: -0.02em; }
+  .statement .w { transition: color 400ms var(--ease-out-soft); }
+  .statement.painting .w { color: var(--color-border); }
+  .statement.painting .w.on { color: var(--color-text); }
+  .statement .w.acc, .statement.painting .w.acc.on { color: var(--color-accent); }
+  .statement.painting .w.acc:not(.on) { color: var(--color-border); }
+  .notes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 32px var(--grid-gap); padding-top: 24px; border-top: var(--line); }
+  .notes > div { display: flex; flex-direction: column; gap: 12px; }
+  .notes .txt { max-width: 70ch; }
+  @container (min-width: 1024px) { .notes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+  /* ═══════════════════════ Skills — C(큰 글자) ═══════════════════════ */
+  .sk-group { display: flex; flex-direction: column; gap: 12px; padding: 24px 0 32px; border-top: var(--line); }
+  .sk-group:last-child { border-bottom: var(--line); }
+  .sk-words { font-size: clamp(30px, 4.4cqw, 88px); font-weight: 500; line-height: 1.1; letter-spacing: -0.03em; }
+  .sk-words .w { display: inline-block; transition: color 260ms var(--ease-out-expo), transform 200ms var(--ease-bounce); }
+  .sk-words .sep { color: var(--color-border); }
+  @media (hover: hover) { .sk-words .w:hover { color: var(--color-accent); transform: translateY(-4px); } }
+
+  /* ═══════════════════════ Projects — 지금 그대로 (A시안 계단 카드) ═══════════════════════ */
+  .pj-heading { margin: 0 0 24px; font-size: 28px; font-weight: 600; letter-spacing: -0.01em; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px 24px; margin-bottom: 8px; }
+  .chip { min-height: 44px; padding: 0; border: 0; border-bottom: 1px solid transparent; background: none; color: var(--color-text-muted) !important; transition: color 200ms, border-color 200ms; }
+  .chip[aria-pressed="true"] { color: var(--color-text) !important; border-bottom-color: var(--color-text); }
+  .chip sup { margin-left: 2px; font-size: 11px; }
+  .pj-status { margin-bottom: 48px !important; color: var(--color-text-muted); font-size: 12px; letter-spacing: 0.04em; }
+
+  .pj-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 48px 32px; align-items: start; }
+  .pj-list > li:nth-child(3n + 1) { margin-left: calc(var(--step) * 2); }
+  .pj-list > li:nth-child(3n + 2) { margin-left: var(--step); }
+  @container (min-width: 601px) {
+    .pj-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 64px 32px; }
+    .pj-list > li:nth-child(n) { margin-left: 0; }
+    .pj-list > li:nth-child(even) { margin-top: calc(var(--step) * 2); }
+  }
+  @container (min-width: 1001px) {
+    .pj-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .pj-list > li:nth-child(n) { margin-top: 0; }
+    .pj-list > li:nth-child(3n + 1) { margin-top: calc(var(--step) * 2); }
+    .pj-list > li:nth-child(3n + 2) { margin-top: var(--step); }
+  }
+  .card { display: flex; flex-direction: column; gap: 16px; }
+  .thumb { display: grid; place-items: center; aspect-ratio: 1.278; overflow: hidden; background: var(--color-surface); color: var(--color-text-muted); font-size: var(--font-size-sm); }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform 800ms var(--ease-out-soft); }
+  @media (hover: hover) { .card:hover .thumb img { transform: scale(1.05); } }
+  .card .meta { display: flex; justify-content: space-between; gap: 12px; padding-top: 12px; border-top: var(--line); color: var(--color-text-muted); font-size: 12px; letter-spacing: 0.04em; }
+  .card .body { display: flex; flex-direction: column; gap: 8px; }
+  .card h3 { margin: 0; font-size: clamp(20px, 1.6cqw, 28px); font-weight: 500; line-height: 1.3; }
+  .card .tagline { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+  .card .links { display: flex; flex-wrap: wrap; gap: 16px; }
+  .card .links a, .card summary { display: inline-flex; align-items: center; min-height: 44px; font-size: var(--font-size-sm); text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+
+  /* ═══════════════════════ Education — B(2열 엇갈림 카드) ═══════════════════════ */
+  .edu { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--step); align-items: start; }
+  .edu-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: calc(100% - var(--step));
+    padding: 24px;
+    border: var(--line);
+    transition: border-color 250ms, transform 250ms var(--ease-bounce);
+  }
+  .edu-card:nth-child(2n) { margin-left: var(--step); }
+  .edu-card .meta { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .edu-card .year { font-size: var(--font-size-h2); font-weight: 500; line-height: 1; letter-spacing: -0.03em; }
+  .edu-card ul { padding-top: 12px; border-top: var(--line); }
+  .edu-card ul li::before { content: '— '; color: var(--color-text-muted); }
+  .badge { padding: 4px 8px; background: var(--color-accent-bg); color: var(--color-accent-contrast); }
+  @media (hover: hover) { .edu-card:hover { border-color: var(--color-border-strong); transform: rotate(-1.5deg); } }
+  @container (min-width: 1024px) {
+    .edu { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 0 var(--grid-gap); }
+    .edu-card { width: auto; grid-column: span 6; }
+    .edu-card:nth-child(2n) { margin-left: 0; margin-top: calc(var(--step) * 2); }
+    .edu-card .year { font-size: clamp(56px, 7cqw, 128px); }
+  }
+
+  /* ═══════════════════════ Contact — C(한 문장 + 큰 이메일) ═══════════════════════ */
+  .say { margin: 0 0 var(--step) !important; max-width: 20em; font-size: clamp(28px, 3.6cqw, 72px); font-weight: 500; line-height: 1.25; letter-spacing: -0.02em; }
+  .say .dim { color: var(--color-border); }
+  .mail {
+    display: block;
+    padding: 24px 0;
+    border-top: var(--line-strong);
+    border-bottom: var(--line-strong);
+    font-size: clamp(32px, 8.4cqw, 160px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    overflow-wrap: anywhere;
+    transition: color 260ms var(--ease-out-expo), padding 400ms var(--ease-out-expo);
+  }
+  .mail .arw { color: var(--color-accent); }
+  @media (hover: hover) { .mail:hover { color: var(--color-accent); padding-left: var(--step); } }
+  .ct-sub { display: flex; flex-wrap: wrap; gap: 12px 32px; margin-top: 20px; }
+  .ct-sub button { padding: 0; border: 0; background: none; }
+
+  /* ═══════════════════════ Footer — C(흑백 뒤집은 띠) ═══════════════════════ */
+  .ft { padding: var(--step) var(--gutter) 24px; background: var(--color-text); color: var(--color-bg); }
+  .ft .label { color: inherit; opacity: 0.7; }
+  .ft .mark { display: block; margin: 0 0 var(--step); font-size: 16.4cqw; font-weight: 600; line-height: 0.82; letter-spacing: -0.05em; white-space: nowrap; }
+  .ft .row { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 24px; padding-top: 16px; border-top: 1px solid currentColor; }
+  .ft .anno { background: var(--color-bg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site *, .site *::before, .site *::after { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<header class="toolbar" id="toolbar">
+  <h1>전체 페이지 조합안</h1>
+  <div class="seg" role="group" aria-label="테마">
+    <button type="button" data-set="theme" data-val="light" aria-pressed="true">라이트</button>
+    <button type="button" data-set="theme" data-val="dark" aria-pressed="false">다크</button>
+  </div>
+  <div class="seg" role="group" aria-label="화면 폭">
+    <button type="button" data-set="size" data-val="desktop" aria-pressed="true">데스크톱</button>
+    <button type="button" data-set="size" data-val="tablet" aria-pressed="false">태블릿 768</button>
+    <button type="button" data-set="size" data-val="mobile" aria-pressed="false">모바일 375</button>
+  </div>
+  <div class="seg" role="group" aria-label="설명 표시">
+    <button type="button" data-set="anno" data-val="on" aria-pressed="true">설명 켜기</button>
+    <button type="button" data-set="anno" data-val="off" aria-pressed="false">끄기</button>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="desc">
+    <h2>조합안 — 헤더 B+C · Skills C · Education B · Contact/Footer C</h2>
+    <p>Hero · About · Projects는 지금 코드 그대로 옮겼습니다. 나머지는 지난 시안(sections.html)에서 고른 조합입니다.</p>
+    <dl>
+      <dt>헤더</dt><dd>데스크톱은 B(칸 나누기 + 지금 섹션 칸 흑백 반전). 태블릿·모바일은 칸 막대에 C의 "지금 섹션 이름"과 큰 글자 전체 화면 메뉴.</dd>
+      <dt>Hero · About</dt><dd>지금 그대로 (3D 자리는 점선 상자로 표시)</dd>
+      <dt>Skills</dt><dd>C — About과 같은 왼쪽 고정 라벨 + 큰 기술 이름</dd>
+      <dt>Projects</dt><dd>지금 그대로 — 분류 칩(눌러 볼 수 있음) + 계단 카드</dd>
+      <dt>Education</dt><dd>B — 카드 2장, 2번 카드만 계단 2칸 내림</dd>
+      <dt>Contact · Footer</dt><dd>C — 한 문장 + 화면 폭 이메일, 흑백 뒤집은 띠</dd>
+    </dl>
+  </section>
+
+  <div class="stage" id="stage" data-size="desktop">
+    <div class="site" id="site" data-theme="light">
+
+      <!-- ═════════ 헤더 ═════════ -->
+      <header class="hd" id="hd">
+        <a href="#hero" class="cell logo"><span class="mark" aria-hidden="true">P</span>Portfolio</a>
+        <nav aria-label="주요 섹션 이동">
+          <ul>
+            <li><a href="#about"><span class="label no">01</span><span class="label">About</span></a></li>
+            <li><a href="#skills"><span class="label no">02</span><span class="label">Skills</span></a></li>
+            <li><a href="#projects"><span class="label no">03</span><span class="label">Projects</span></a></li>
+            <li><a href="#education"><span class="label no">04</span><span class="label">Education</span></a></li>
+            <li><a href="#contact"><span class="label no">05</span><span class="label">Contact</span></a></li>
+          </ul>
+        </nav>
+        <span class="cell now label" data-now>Hero</span>
+        <div class="cell tgc"><button type="button" class="tg" aria-label="테마 바꾸기">◐</button></div>
+        <button type="button" class="cell menu-btn" id="menuBtn" aria-expanded="false" aria-controls="mpanel">Menu</button>
+        <div class="mpanel" id="mpanel">
+          <ul>
+            <li><a href="#about"><span class="label">01</span>About</a></li>
+            <li><a href="#skills"><span class="label">02</span>Skills</a></li>
+            <li><a href="#projects"><span class="label">03</span>Projects</a></li>
+            <li><a href="#education"><span class="label">04</span>Education</a></li>
+            <li><a href="#contact"><span class="label">05</span>Contact</a></li>
+          </ul>
+        </div>
+      </header>
+      <span class="anno" style="margin: 8px var(--gutter) 0">① 헤더 B+C — 데스크톱: 칸 나눈 메뉴가 늘 보이고 지금 섹션 칸이 반전 / 태블릿·모바일: 로고 · 지금 섹션 · 토글 · Menu 칸 → 누르면 큰 글자 전체 화면 메뉴</span>
+
+      <!-- ═════════ Hero (유지) ═════════ -->
+      <section class="hero" id="hero" data-sec="hero">
+        <div class="scene" aria-hidden="true"><div class="clawd">Claw'd 3D</div></div>
+        <div class="inner">
+          <p class="who">이름 · Frontend Engineer</p>
+          <h1><span>2027</span> <span>PORTFOLIO</span></h1>
+          <p class="tagline"><span>디자인의 의도를 이해하고,</span> <span>코드로 끝까지 구현합니다.</span></p>
+          <span class="anno" style="margin-top:16px">② Hero — 지금 그대로 (라벨 / 연도형 큰 제목 / 한 줄 소개 / 뒤에 Claw'd 3D)</span>
+        </div>
+        <a href="#about" class="cue">Scroll<span aria-hidden="true">↓</span></a>
+      </section>
+
+      <!-- ═════════ About (유지) ═════════ -->
+      <section class="sec" id="about" data-sec="about">
+        <div class="side-wrap">
+          <div class="label-col">
+            <p class="label">(01) About</p>
+            <h2 class="h3">소개</h2>
+          </div>
+          <div class="body-col">
+            <span class="anno block">③ About — 지금 그대로 (스크롤하면 단어가 칠해짐)</span>
+            <p class="statement" id="statement"></p>
+            <div class="notes">
+              <div class="rise"><p class="label">01 — Why</p><p class="txt">이력과 프로젝트, 글을 한 곳에 모아 방문자가 목적에 따라 필요한 정보만 빠르게 꺼내갈 수 있도록 이 사이트를 직접 기획하고 만들었습니다.</p></div>
+              <div class="rise"><p class="label">02 — Next</p><p class="txt">지금은 이 사이트 자체의 코드 품질과 완성도로 말합니다. 배포는 끝이 아니라 시작이며, 새로운 프로젝트로 계속 채워 나갑니다.</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════ Skills (C) ═════════ -->
+      <section class="sec" id="skills" data-sec="skills">
+        <div class="side-wrap">
+          <div class="label-col">
+            <p class="label">(02) Skills</p>
+            <h2 class="h3">쓸 줄 아는 도구</h2>
+          </div>
+          <div class="body-col">
+            <span class="anno block">④ Skills C — About과 같은 뼈대. 단어에 마우스를 올리면 오렌지로 튀어 오름</span>
+            <div class="sk-group rise"><span class="label">01 — Development · 3</span><p class="sk-words"><span class="w">JavaScript</span> <span class="sep">/</span> <span class="w">React</span> <span class="sep">/</span> <span class="w">jQuery</span></p></div>
+            <div class="sk-group rise"><span class="label">02 — Design · 3</span><p class="sk-words"><span class="w">Figma</span> <span class="sep">/</span> <span class="w">Photoshop</span> <span class="sep">/</span> <span class="w">Illustrator</span></p></div>
+            <div class="sk-group rise"><span class="label">03 — Motion &amp; 3D · 2</span><p class="sk-words"><span class="w">After Effects</span> <span class="sep">/</span> <span class="w">Blender</span></p></div>
+            <div class="sk-group rise"><span class="label">04 — AI Tools · 3</span><p class="sk-words"><span class="w">Claude Code</span> <span class="sep">/</span> <span class="w">Codex</span> <span class="sep">/</span> <span class="w">omp</span></p></div>
+            <div class="sk-group rise"><span class="label">05 — Tooling · 1</span><p class="sk-words"><span class="w">Git</span></p></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═════════ Projects (유지) ═════════ -->
+      <section class="sec" id="projects" data-sec="projects">
+        <h2 class="pj-heading">Projects</h2>
+        <div class="chips" role="group" aria-label="프로젝트 분류" id="chips"></div>
+        <p class="pj-status" id="pjStatus" aria-live="polite"></p>
+        <span class="anno block">⑤ Projects — 지금 그대로 (칩으로 분류 / 3칸 계단 카드). 섹션 머리만 옛 모양이라, 나중에 (03) 라벨로 맞출지 정하면 됨</span>
+        <ul class="pj-list" id="pjList"></ul>
+      </section>
+
+      <!-- ═════════ Education (B) ═════════ -->
+      <section class="sec" id="education" data-sec="education">
+        <div class="head">
+          <p class="label">(04) Education &amp; Activities</p>
+          <h2 class="title">배운 곳과 한 일</h2>
+        </div>
+        <span class="anno block">⑥ Education B — 카드 2장 = 2열 엇갈림(§7.2). 시작 연도를 큰 숫자로, 진행 중이면 오렌지 배지</span>
+        <ol class="edu">
+          <li class="edu-card rise">
+            <div class="meta"><span class="label">2025.09 — 현재</span><span class="label badge">진행 중</span></div>
+            <p class="year">2025</p>
+            <h3 class="h3">TODO: 부트캠프·교육과정명</h3>
+            <p class="sm muted">TODO: 기관명</p>
+            <ul class="sm"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+          </li>
+          <li class="edu-card rise">
+            <div class="meta"><span class="label">2021.03 — 2025.02</span><span class="label">02</span></div>
+            <p class="year">2021</p>
+            <h3 class="h3">TODO: 학교/전공 또는 스터디명</h3>
+            <p class="sm muted">TODO: 기관명</p>
+            <ul class="sm"><li>TODO: 무엇을 했는지 1~2줄</li></ul>
+          </li>
+        </ol>
+      </section>
+
+      <!-- ═════════ Contact (C) ═════════ -->
+      <section class="sec" id="contact" data-sec="contact">
+        <p class="label" style="margin-bottom:24px">(05) Contact</p>
+        <span class="anno block">⑦ Contact C — 한 문장 + 화면 폭 가득한 이메일 (마우스를 올리면 오른쪽으로 밀리며 오렌지)</span>
+        <p class="say rise">좋은 제품을 <span class="dim">함께</span> 만들 팀을 찾고 있습니다.</p>
+        <a href="mailto:you@example.com" class="mail">you@example.com <span class="arw" aria-hidden="true">↗</span></a>
+        <div class="ct-sub">
+          <a href="#" class="label ul">GitHub ↗</a>
+          <a href="#" class="label ul">Blog ↗ <span class="muted">— 아직 글이 없습니다</span></a>
+          <button type="button" class="label ul" id="copyBtn">주소 복사 ⧉</button>
+        </div>
+      </section>
+
+      <!-- ═════════ Footer (C) ═════════ -->
+      <footer class="ft">
+        <span class="anno block">⑧ Footer C — 흑백을 뒤집은 띠 + 화면 폭 가득한 로고 글자</span>
+        <span class="mark" aria-hidden="true">PORTFOLIO</span>
+        <div class="row">
+          <span class="label">© 2026 Portfolio</span>
+          <a href="#" class="label ul">이 사이트의 소스 코드 ↗</a>
+          <a href="#hero" class="label ul">맨 위로 ↑</a>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  const site = document.getElementById('site')
+  const stage = document.getElementById('stage')
+  const hd = document.getElementById('hd')
+  const menuBtn = document.getElementById('menuBtn')
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+  const state = {
+    theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+    size: 'desktop',
+    anno: 'on',
+  }
+
+  function apply() {
+    document.querySelectorAll('[data-set]').forEach((b) => b.setAttribute('aria-pressed', String(state[b.dataset.set] === b.dataset.val)))
+    site.dataset.theme = state.theme
+    stage.dataset.size = state.size
+    document.body.dataset.anno = state.anno
+    setMenu(false)
+    requestAnimationFrame(() => { spy(); paint() })
+  }
+
+  document.getElementById('toolbar').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-set]')
+    if (!b) return
+    state[b.dataset.set] = b.dataset.val
+    apply()
+  })
+
+  site.querySelector('.tg').addEventListener('click', () => {
+    state.theme = state.theme === 'dark' ? 'light' : 'dark'
+    apply()
+  })
+
+  // 큰 글자 메뉴 열고 닫기
+  function setMenu(open) {
+    hd.classList.toggle('open', open)
+    menuBtn.setAttribute('aria-expanded', String(open))
+    menuBtn.textContent = open ? 'Close' : 'Menu'
+  }
+  menuBtn.addEventListener('click', () => setMenu(!hd.classList.contains('open')))
+  addEventListener('keydown', (e) => { if (e.key === 'Escape') setMenu(false) })
+
+  // 앵커 이동 — 헤더 높이만큼 띄운다
+  const toolbar = document.getElementById('toolbar')
+  const toolbarH = () => toolbar.offsetHeight
+  site.addEventListener('click', (e) => {
+    const a = e.target.closest('a[href^="#"]')
+    if (!a) return
+    e.preventDefault()
+    setMenu(false)
+    const target = document.querySelector(a.getAttribute('href'))
+    if (!target) return
+    const top = target.getBoundingClientRect().top + scrollY - toolbarH() - hd.offsetHeight + 1
+    scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' })
+  })
+
+  // 스크롤 스파이 — 데스크톱은 메뉴 칸 반전, 태블릿·모바일은 "지금 섹션" 칸 글자
+  const NAMES = { hero: 'Hero', about: '(01) About', skills: '(02) Skills', projects: '(03) Projects', education: '(04) Education', contact: '(05) Contact' }
+  const nowEl = site.querySelector('[data-now]')
+  function spy() {
+    const line = toolbarH() + hd.offsetHeight + 8
+    let now = 'hero'
+    site.querySelectorAll('[data-sec]').forEach((s) => { if (s.getBoundingClientRect().top <= line) now = s.dataset.sec })
+    site.querySelectorAll('nav a, .mpanel a').forEach((a) => {
+      if (a.getAttribute('href') === `#${now}`) a.setAttribute('aria-current', 'true')
+      else a.removeAttribute('aria-current')
+    })
+    nowEl.textContent = NAMES[now]
+  }
+
+  // About 큰 문장 — 화면 높이 60% 선을 넘은 단어부터 칠한다 (*표시 = 오렌지)
+  const WORDS = '실무 경력보다 *완성한 *프로젝트로 말합니다. 요구사항을 정리하고, 설계하고, 성능과 접근성 기준까지 맞춰 하나를 끝까지 만듭니다.'.split(' ')
+  const statement = document.getElementById('statement')
+  statement.innerHTML = WORDS.map((w) => `<span class="w${w.startsWith('*') ? ' acc' : ''}">${w.replace('*', '')}</span>`).join(' ')
+  if (!reduce) statement.classList.add('painting')
+  const words = statement.querySelectorAll('.w')
+  function paint() {
+    if (reduce) return
+    const line = innerHeight * 0.6
+    words.forEach((w) => w.classList.toggle('on', w.getBoundingClientRect().top < line))
+  }
+
+  addEventListener('scroll', () => { spy(); paint() }, { passive: true })
+  addEventListener('resize', () => { measure(); spy(); paint() })
+
+  // Projects — 지금 코드와 같은 데이터·동작 (칩 고르기)
+  const IMG = '../../public/projects/'
+  const PROJECTS = [
+    { cat: '웹앱', title: 'SNS 구현', tagline: 'TODO: 한 줄 소개', period: 'TODO – TODO', img: 'my-sns.jpg', links: ['데모 보기', '소스 코드'] },
+    { cat: '웹사이트', title: '블로그 구현', tagline: 'TODO: 한 줄 소개', period: 'TODO – TODO', img: 'blog-demo.jpg', links: ['데모 보기', '소스 코드'] },
+    { cat: '웹사이트', title: '개인 포트폴리오 사이트 (이 사이트)', tagline: '요구사항 정의부터 설계·구현·배포까지 직접 진행한 1인 프로젝트', period: '2026-09 – 진행 중', stack: 'React · TypeScript · Vite · CSS Modules', details: true, links: [] },
+    { cat: '디자인', title: '예시 디자인 작업물', tagline: 'TODO: 한 줄 소개', period: 'TODO – TODO', img: 'design-1.jpg', links: [] },
+    { cat: '디자인', title: '예시 디자인 작업물2', tagline: 'TODO: 한 줄 소개', period: 'TODO – TODO', img: 'design-2.jpg', links: [] },
+    { cat: '디자인', title: '예시 디자인 작업물3', tagline: 'TODO: 한 줄 소개', period: 'TODO – TODO', img: 'design-3.jpg', links: [] },
+  ]
+  const CATS = ['전체', '웹앱', '웹사이트', '디자인']
+  let selected = '전체'
+  const chipsEl = document.getElementById('chips')
+  const listEl = document.getElementById('pjList')
+  const statusEl = document.getElementById('pjStatus')
+  function renderProjects() {
+    const count = (c) => (c === '전체' ? PROJECTS.length : PROJECTS.filter((p) => p.cat === c).length)
+    chipsEl.innerHTML = CATS.map((c) => `<button type="button" class="chip" aria-pressed="${c === selected}" data-cat="${c}">${c}<sup>${count(c)}</sup></button>`).join('')
+    const shown = selected === '전체' ? PROJECTS : PROJECTS.filter((p) => p.cat === selected)
+    statusEl.textContent = `${selected} · ${shown.length}개 작업물`
+    listEl.innerHTML = shown.map((p) => `
+      <li><article class="card">
+        <div class="thumb">${p.img ? `<img src="${IMG}${p.img}" alt="${p.title} 이미지" loading="lazy" onerror="this.replaceWith('이미지')">` : '이미지 없음'}</div>
+        <p class="meta"><span>${p.cat}</span><span>${p.period}</span></p>
+        <div class="body">
+          <h3>${p.title}</h3>
+          <p class="tagline">${p.tagline}</p>
+          ${p.stack ? `<p class="label" style="text-transform:none;letter-spacing:0">${p.stack}</p>` : ''}
+          ${p.details ? '<details><summary>자세히 보기</summary><p class="sm muted">역할 · 문제 · 기술적 선택 · 결과가 여기에 펼쳐짐</p></details>' : ''}
+          ${p.links.length ? `<p class="links">${p.links.map((l) => `<a href="#" onclick="return false">${l} ↗</a>`).join('')}</p>` : ''}
+        </div>
+      </article></li>`).join('')
+  }
+  chipsEl.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-cat]')
+    if (!b) return
+    selected = b.dataset.cat
+    renderProjects()
+  })
+  renderProjects()
+
+  // 이메일 주소 복사
+  const copyBtn = document.getElementById('copyBtn')
+  copyBtn.addEventListener('click', async () => {
+    const before = copyBtn.textContent
+    try {
+      await navigator.clipboard.writeText('you@example.com')
+      copyBtn.textContent = '복사했습니다 ✓'
+    } catch {
+      copyBtn.textContent = '복사 실패 — 주소를 직접 선택하세요'
+    }
+    setTimeout(() => (copyBtn.textContent = before), 1600)
+  })
+
+  // 등장 모션 — 화면에 들어올 때 한 번만
+  if (!reduce && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (!en.isIntersecting) return
+        en.target.classList.remove('is-hidden')
+        io.unobserve(en.target)
+      })
+    }, { rootMargin: '0px 0px -10% 0px' })
+    document.querySelectorAll('.rise').forEach((el, i) => {
+      el.classList.add('is-hidden')
+      el.style.transitionDelay = `${(i % 2) * 100}ms`
+      io.observe(el)
+    })
+  }
+
+  // 도구 막대 높이를 재서 사이트 헤더가 그 바로 아래에 붙게 한다
+  function measure() {
+    document.documentElement.style.setProperty('--tb', `${toolbarH()}px`)
+    site.style.setProperty('--header-h', `${hd.offsetHeight}px`)
+  }
+
+  measure()
+  apply()
+</script>
+</body>
+</html>
