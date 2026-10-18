@@ -1,33 +1,51 @@
-.categories {
+/* 시안 C — 카테고리마다 큰 기술 이름이 한 줄로 흐른다 */
+.groups {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: var(--space-6);
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
-.categoryTitle {
-  margin-bottom: var(--space-3);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text);
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5) 0 var(--space-6);
+  border-top: var(--line);
 }
 
-.tags {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.group:last-child {
+  border-bottom: var(--line);
+}
+
+/* 의미는 리스트, 모양은 문장처럼 이어 붙인다 */
+.words {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  align-items: baseline;
+  gap: 0 0.3em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(30px, 4.4vw, 88px);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 
-.tag {
-  padding: var(--space-1) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font-size: var(--font-size-sm);
+.word {
+  display: inline-block;
+  transition:
+    color var(--duration-base) var(--ease-out-expo),
+    transform var(--duration-fast) var(--ease-bounce);
+}
+
+.sep {
+  color: var(--color-border);
+}
+
+@media (hover: hover) {
+  .word:hover {
+    color: var(--color-accent);
+    transform: translateY(-4px);
+  }
 }

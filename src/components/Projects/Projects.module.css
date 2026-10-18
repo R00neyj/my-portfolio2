@@ -1,5 +1,5 @@
 /*
- * 시안 A(docs/wireframe/projects_cards.html) — 투모어스탭 참고
+ * 시안 docs/wireframe/full.html `.pj-list` — 투모어스탭 참고
  * 3열 카드가 오른쪽으로 갈수록 한 칸씩 올라가는 계단 배치, 각진 이미지.
  */
 
@@ -20,11 +20,13 @@
   color: var(--color-text-muted);
   font: inherit;
   cursor: pointer;
-  transition: color var(--motion-fast), border-color var(--motion-fast);
+  transition: color var(--duration-fast), border-color var(--duration-fast);
 }
 
-.chip:hover {
-  color: var(--color-text);
+@media (hover: hover) {
+  .chip:hover {
+    color: var(--color-text);
+  }
 }
 
 .chip[aria-pressed='true'] {
@@ -34,21 +36,19 @@
 
 .chipCount {
   margin-left: 2px;
-  font-size: 11px;
+  font-size: var(--font-size-label);
   vertical-align: super;
 }
 
 .status {
   margin-bottom: var(--space-7);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-label);
   letter-spacing: 0.04em;
 }
 
 /* ───── 카드 목록 — 3분할 + 계단 ───── */
 .list {
-  --step: clamp(22px, 3.2vw, 64px); /* 계단 1칸 높이 */
-
   list-style: none;
   margin: 0;
   padding: 0;
@@ -122,11 +122,20 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform var(--motion-reveal);
+  transition: transform var(--duration-image) var(--ease-out-soft);
 }
 
-.card:hover .thumbnailImage {
-  transform: scale(1.05);
+@media (hover: hover) {
+  .card:hover .thumbnailImage {
+    transform: scale(1.05);
+  }
+}
+
+/* 썸네일이 없을 때: 제목 첫 글자 (DESIGN §7.3) */
+.initial {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
 }
 
 .meta {
@@ -134,9 +143,9 @@
   justify-content: space-between;
   gap: var(--space-3);
   padding-top: var(--space-3);
-  border-top: 1px solid var(--color-border);
+  border-top: var(--line);
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-label);
   letter-spacing: 0.04em;
 }
 
@@ -160,7 +169,7 @@
 
 .stack {
   color: var(--color-text-muted);
-  font-size: 12px;
+  font-size: var(--font-size-label);
 }
 
 /* ───── 자세히 보기(접기/펼치기) ───── */
@@ -193,7 +202,7 @@
 .fieldLabel {
   display: block;
   margin-bottom: var(--space-1);
-  font-size: 12px;
+  font-size: var(--font-size-label);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-muted);
 }
@@ -225,8 +234,10 @@
   text-underline-offset: 4px;
 }
 
-.link:hover {
-  color: var(--color-accent);
+@media (hover: hover) {
+  .link:hover {
+    color: var(--color-accent);
+  }
 }
 
 /* ───── 더보기 ('전체' 칩에서 PAGE_SIZE 초과 시) ───── */
@@ -247,16 +258,18 @@
   color: var(--color-text);
   font: inherit;
   cursor: pointer;
-  transition: background var(--motion-fast), color var(--motion-fast);
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
-.more:hover {
-  background: var(--color-text);
-  color: var(--color-bg);
+@media (hover: hover) {
+  .more:hover {
+    background: var(--color-text);
+    color: var(--color-bg);
+  }
 }
 
 .moreCount {
-  font-size: 12px;
+  font-size: var(--font-size-label);
   opacity: 0.7;
 }
 

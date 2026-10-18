@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Menu, X } from 'lucide-react'
 import { useActiveSection } from '../../hooks/useActiveSection'
 import { education } from '../../data/education'
 import ThemeToggle from '../ThemeToggle/ThemeToggle'
@@ -10,17 +9,22 @@ const NAV_ITEMS = [
   { id: 'skills', label: 'Skills' },
   { id: 'projects', label: 'Projects' },
   // FR-E3: Education 섹션이 렌더되지 않으면(항목 2건 미만) 내비게이션에도 노출하지 않는다.
-  ...(education.length >= 2
-    ? [{ id: 'education', label: 'Education & Activities' }]
-    : []),
+  ...(education.length >= 2 ? [{ id: 'education', label: 'Education' }] : []),
   { id: 'contact', label: 'Contact' },
-]
+].map((item, index) => ({
+  ...item,
+  no: String(index + 1).padStart(2, '0'),
+}))
 
-const SECTION_IDS = NAV_ITEMS.map((item) => item.id)
+// 맨 위(Hero)에서도 현재 섹션이 비지 않도록 hero도 감시한다.
+const SECTION_IDS = ['hero', ...NAV_ITEMS.map((item) => item.id)]
 
 function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const activeId = useActiveSection(SECTION_IDS)
+
+  const current = NAV_ITEMS.find((item) => item.id === activeId)
+  const nowLabel = current ? `(${current.no}) ${current.label}` : 'Hero'
 
   useEffect(() => {
     if (!isMenuOpen) return
@@ -33,71 +37,69 @@ function Header() {
 
   return (
     <header className={styles.header}>
-      <div className={styles.bar}>
-        <a href="#hero" className={styles.logo}>
-          <span className={styles.logoMark} aria-hidden="true">
-            P
-          </span>
-          Portfolio
-        </a>
+      <a href="#hero" className={`${styles.cell} ${styles.logo}`}>
+        <span className={styles.logoMark} aria-hidden="true">
+          P
+        </span>
+        Portfolio
+      </a>
 
-        <div className={styles.controls}>
-          <nav className={styles.nav} aria-label="주요 섹션 이동">
-            <ul className={styles.navList}>
-              {NAV_ITEMS.map((item) => (
-                <li key={item.id}>
-                  <a
-                    href={`#${item.id}`}
-                    className={`${styles.navLink} ${activeId === item.id ? styles.navLinkActive : ''}`}
-                    aria-current={activeId === item.id ? 'true' : undefined}
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
+      <nav className={styles.nav} aria-label="주요 섹션 이동">
+        <ul className={styles.navList}>
+          {NAV_ITEMS.map((item) => (
+            <li key={item.id}>
+              <a
+                href={`#${item.id}`}
+                className={styles.navLink}
+                aria-current={activeId === item.id ? 'true' : undefined}
+              >
+                <span className={styles.navNo}>{item.no}</span>
+                <span>{item.label}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-          <ThemeToggle />
+      <span className={`${styles.cell} ${styles.now}`} aria-hidden="true">
+        {nowLabel}
+      </span>
 
-          <button
-            type="button"
-            className={styles.menuToggle}
-            aria-expanded={isMenuOpen}
-            aria-controls="mobile-nav"
-            aria-label={isMenuOpen ? '메뉴 닫기' : '메뉴 열기'}
-            onClick={() => setIsMenuOpen((open) => !open)}
-          >
-            {isMenuOpen ? (
-              <X size={20} aria-hidden="true" />
-            ) : (
-              <Menu size={20} aria-hidden="true" />
-            )}
-          </button>
-        </div>
+      <div className={`${styles.cell} ${styles.toggleCell}`}>
+        <ThemeToggle />
       </div>
 
-      {isMenuOpen && (
-        <nav
-          id="mobile-nav"
-          className={styles.mobilePanel}
-          aria-label="주요 섹션 이동 (모바일)"
-        >
-          <ul className={styles.mobileList}>
-            {NAV_ITEMS.map((item) => (
-              <li key={item.id}>
-                <a
-                  href={`#${item.id}`}
-                  className={styles.mobileLink}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
+      <button
+        type="button"
+        className={`${styles.cell} ${styles.menuBtn}`}
+        aria-expanded={isMenuOpen}
+        aria-controls="mobile-nav"
+        onClick={() => setIsMenuOpen((open) => !open)}
+      >
+        {isMenuOpen ? 'Close' : 'Menu'}
+      </button>
+
+      <nav
+        id="mobile-nav"
+        className={`${styles.panel} ${isMenuOpen ? styles.panelOpen : ''}`}
+        aria-label="주요 섹션 이동 (모바일)"
+      >
+        <ul className={styles.panelList}>
+          {NAV_ITEMS.map((item) => (
+            <li key={item.id}>
+              <a
+                href={`#${item.id}`}
+                className={styles.panelLink}
+                aria-current={activeId === item.id ? 'true' : undefined}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <span className={styles.panelNo}>{item.no}</span>
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </header>
   )
 }

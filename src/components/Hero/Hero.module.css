@@ -23,21 +23,7 @@
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  max-width: var(--container-max);
-  margin-inline: auto;
-  padding: var(--space-7) var(--space-4) var(--space-5);
-}
-
-@media (min-width: 768px) {
-  .inner {
-    padding-inline: var(--space-6);
-  }
-}
-
-@media (min-width: 1024px) {
-  .inner {
-    padding-inline: var(--space-7);
-  }
+  padding: var(--space-7) var(--gutter) var(--space-5);
 }
 
 /* ① 라벨 */
@@ -59,6 +45,23 @@
 
 .title span {
   display: block;
+}
+
+/* §8.4 P3 제목 다시 칠하기 — 마우스로 누르면 text → accent → text (450ms) */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .title {
+    cursor: default;
+  }
+
+  .title.repaint {
+    animation: repaint 450ms var(--ease-out-soft);
+  }
+}
+
+@keyframes repaint {
+  50% {
+    color: var(--color-accent);
+  }
 }
 
 /* ③ 한 줄 소개 — 구절 단위로만 줄바꿈 (FR-H1b) */
@@ -95,7 +98,6 @@
   min-width: 44px;
   min-height: 44px;
   padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);

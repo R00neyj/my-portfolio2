@@ -1,49 +1,98 @@
-/* 역순 연대기(FR-E1)이므로 타임라인으로 구조를 실제로 인코딩한다 */
+/* 시안 B — 카드가 계단처럼 엇갈린다 (모든 엇갈림은 --step의 배수) */
 .list {
-  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--step);
+  align-items: start;
   margin: 0;
   padding: 0;
+  list-style: none;
+}
+
+/* 등장 모션은 li가, 테두리와 호버는 안쪽 card가 맡는다 */
+.item {
+  width: calc(100% - var(--step));
+}
+
+.item:nth-child(2n) {
+  margin-left: var(--step);
+}
+
+.card {
   display: flex;
   flex-direction: column;
-  border-left: 2px solid var(--color-border);
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: var(--line);
+  transition:
+    border-color 250ms,
+    transform 250ms var(--ease-bounce);
 }
 
-.item {
-  position: relative;
-  padding: 0 0 var(--space-6) var(--space-6);
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--color-border-strong);
+    transform: rotate(-1.5deg);
+  }
 }
 
-.item::before {
-  content: '';
-  position: absolute;
-  top: 4px;
-  left: -6px;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--color-accent);
-}
-
-.item:last-child {
-  padding-bottom: 0;
-}
-
-.itemTitle {
-  font-size: var(--font-size-lg);
-}
-
-.itemMeta {
+.meta {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-3);
-  margin-top: var(--space-1);
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.badge {
+  padding: var(--space-1) var(--space-2);
+  background: var(--color-accent-bg);
+  color: var(--color-accent-contrast);
+}
+
+.year {
+  margin: 0;
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+.org {
+  margin: 0;
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
 }
 
 .highlights {
-  margin-top: var(--space-3);
-  padding-left: var(--space-5);
-  max-width: var(--measure);
-  color: var(--color-text);
+  margin: 0;
+  padding: var(--space-3) 0 0;
+  border-top: var(--line);
+  list-style: none;
+  font-size: var(--font-size-sm);
+}
+
+.highlights li::before {
+  content: '— ';
+  color: var(--color-text-muted);
+}
+
+@media (min-width: 1024px) {
+  .list {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: 0 var(--grid-gap);
+  }
+
+  .item {
+    width: auto;
+    grid-column: span 6;
+  }
+
+  .item:nth-child(2n) {
+    margin-left: 0;
+    margin-top: calc(var(--step) * 2);
+  }
+
+  .year {
+    font-size: clamp(56px, 7vw, 128px);
+  }
 }

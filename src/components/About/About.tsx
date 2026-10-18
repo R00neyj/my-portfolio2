@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { useReveal } from '../../hooks/useReveal'
 import shared from '../../styles/shared.module.css'
 import styles from './About.module.css'
 
@@ -34,14 +35,13 @@ const notes = [
 
 function About() {
   const statementRef = useRef<HTMLParagraphElement>(null)
-  const notesRef = useRef<HTMLDivElement>(null)
+  const notesRef = useReveal<HTMLDivElement>({ stagger: true })
 
-  // 스크롤 채색 + 등장 모션 (docs/DESIGN.md §8.5)
+  // 스크롤 채색 (docs/DESIGN.md §8.5), 아래 두 문단 등장은 useReveal이 맡는다
   // 숨김 클래스는 JS가 붙이므로, 스크립트가 실패하거나 모션 감소 설정이면 처음부터 다 보인다
   useEffect(() => {
     const paragraph = statementRef.current
-    const notesEl = notesRef.current
-    if (!paragraph || !notesEl) return
+    if (!paragraph) return
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
 
     // 단어가 화면 높이 60% 선을 넘어 올라오면 칠하고, 다시 내려가면 지운다
@@ -61,39 +61,22 @@ function About() {
     )
     words.forEach((word) => wordObserver.observe(word))
 
-    // 아래 두 문단은 화면에 들어올 때 한 번만 떠오른다
-    const items = notesEl.querySelectorAll<HTMLElement>(`.${styles.note}`)
-    items.forEach((item) => item.classList.add(styles.hidden))
-    const noteObserver = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue
-          entry.target.classList.remove(styles.hidden)
-          noteObserver.unobserve(entry.target)
-        }
-      },
-      { rootMargin: '0px 0px -10% 0px' },
-    )
-    items.forEach((item) => noteObserver.observe(item))
-
     return () => {
       wordObserver.disconnect()
-      noteObserver.disconnect()
       paragraph.classList.remove(styles.painting)
-      items.forEach((item) => item.classList.remove(styles.hidden))
     }
   }, [])
 
   return (
     <section id="about" className={shared.section}>
-      <div className={styles.layout}>
+      <div className={shared.sideWrap}>
         {/* 섹션 머리를 왼쪽 2열로 작게 접어 큰 문장에 자리를 내준다 */}
-        <div className={styles.head}>
-          <p className={styles.label}>(01) About</p>
-          <h2 className={styles.heading}>소개</h2>
+        <div className={shared.sideLabel}>
+          <p className={shared.label}>(01) About</p>
+          <h2 className={shared.h3}>소개</h2>
         </div>
 
-        <div className={styles.body}>
+        <div className={shared.sideBody}>
           <p ref={statementRef} className={styles.statement}>
             {statement.map(({ text, accent }, index) => (
               <span
@@ -107,13 +90,9 @@ function About() {
           </p>
 
           <div ref={notesRef} className={styles.notes}>
-            {notes.map(({ label, text }, index) => (
-              <div
-                key={label}
-                className={styles.note}
-                style={{ transitionDelay: `${index * 100}ms` }}
-              >
-                <p className={styles.label}>{label}</p>
+            {notes.map(({ label, text }) => (
+              <div key={label} className={styles.note} data-reveal>
+                <p className={shared.label}>{label}</p>
                 <p className={styles.noteText}>{text}</p>
               </div>
             ))}

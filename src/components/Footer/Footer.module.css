@@ -1,30 +1,51 @@
+/* 흑백을 뒤집은 띠 — 다크 모드에서도 토큰이 바뀌며 자동 반전된다 */
 .footer {
-  border-top: 1px solid var(--color-border);
   margin-top: auto;
+  padding: var(--step) var(--gutter) 24px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  overflow: hidden;
+}
+
+/* 화면 폭 가득한 장식 글자 */
+.big {
+  margin: 0 0 var(--step);
+  font-size: 16.4vw;
+  font-weight: 600;
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
 }
 
 .bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
-  max-width: var(--container-max);
-  margin-inline: auto;
-  padding: var(--space-5);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-sm);
+  gap: 0 24px;
+  padding-top: 12px;
+  border-top: 1px solid currentColor;
+  color: inherit;
 }
 
+.dim,
 .link {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
   min-height: 44px;
-  color: var(--color-text-muted);
-  text-decoration: none;
 }
 
-.link:hover {
-  color: var(--color-accent);
+.dim {
+  opacity: 0.7;
+}
+
+.link {
+  color: inherit;
+  opacity: 0.7;
+}
+
+/* 반전 배경에서도 보이도록 포커스 링을 글자색으로 */
+.link:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  opacity: 1;
 }

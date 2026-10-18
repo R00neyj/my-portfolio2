@@ -1,24 +1,30 @@
 .toggle {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  min-width: 44px;
-  min-height: 44px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: var(--line-strong);
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--color-text);
   cursor: pointer;
-  transition:
-    border-color var(--motion-fast),
-    color var(--motion-fast);
+  transition: transform var(--duration-fast) var(--ease-bounce);
 }
 
-.toggle:hover {
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+/* 터치 대상 44px 확보 (보이는 크기는 36px 유지) */
+.toggle::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+}
+
+@media (hover: hover) {
+  .toggle:hover {
+    transform: scale(1.12);
+  }
 }
 
 .srOnly {
