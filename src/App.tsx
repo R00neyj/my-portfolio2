@@ -1,3 +1,4 @@
+import Loader from './components/Loader/Loader'
 import Header from './components/Header/Header'
 import Hero from './components/Hero/Hero'
 import About from './components/About/About'
@@ -10,6 +11,7 @@ import Footer from './components/Footer/Footer'
 function App() {
   return (
     <>
+      <Loader />
       <a href="#main-content" className="skip-link">
         본문으로 건너뛰기
       </a>

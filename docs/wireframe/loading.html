@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>로딩 화면 시안</title>
+<!-- D 숫자 폰트 후보 (시안 비교용 — 실제 적용은 고른 1종만) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Bebas+Neue&family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@800&family=Silkscreen:wght@700&family=Space+Grotesk:wght@700&family=Unbounded:wght@800&display=swap">
+<style>
+  /* ───────────── 시안 바깥(도구 화면) ───────────── */
+  :root {
+    --chrome-bg: #eef0f3;
+    --chrome-panel: #ffffff;
+    --chrome-text: #14161a;
+    --chrome-muted: #5b6472;
+    --chrome-border: #d5d9e0;
+    --chrome-active: #14161a;
+    --chrome-active-text: #ffffff;
+    --anno: #d93a3f;
+    --font: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, 'Segoe UI', sans-serif;
+
+    /* ───────────── 사이트 토큰 (src/styles/tokens.css에서 옮김) ───────────── */
+    --color-bg: #ffffff;
+    --color-surface: #f2f2f2;
+    --color-text: #111111;
+    --color-text-muted: #555555;
+    --color-border: #d2d2d2;
+    --color-accent: #ad522e;
+    --color-accent-bg: #ad522e;
+    --color-accent-contrast: #ffffff;
+    --color-mascot: #d97757;
+    --line: 1px solid var(--color-border);
+    --font-size-display: clamp(48px, 12vw, 160px);
+    --font-size-label: 12px;
+    --letter-spacing-label: 0.08em;
+    --gutter: clamp(16px, 3.2vw, 56px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --chrome-bg: #16181d; --chrome-panel: #1e2128; --chrome-text: #e8eaed;
+      --chrome-muted: #9aa1ac; --chrome-border: #2e333c; --chrome-active: #e8eaed;
+      --chrome-active-text: #14161a; --anno: #f0595e;
+      --color-bg: #111111; --color-surface: #191919; --color-text: #ffffff;
+      --color-text-muted: #a3a3a3; --color-border: #2e2e2e;
+      --color-accent: #d97757; --color-accent-bg: #d97757; --color-accent-contrast: #111111;
+    }
+  }
+  :root[data-theme="dark"] {
+    --chrome-bg: #16181d; --chrome-panel: #1e2128; --chrome-text: #e8eaed;
+    --chrome-muted: #9aa1ac; --chrome-border: #2e333c; --chrome-active: #e8eaed;
+    --chrome-active-text: #14161a; --anno: #f0595e;
+    --color-bg: #111111; --color-surface: #191919; --color-text: #ffffff;
+    --color-text-muted: #a3a3a3; --color-border: #2e2e2e;
+    --color-accent: #d97757; --color-accent-bg: #d97757; --color-accent-contrast: #111111;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    background: var(--chrome-bg);
+    color: var(--chrome-text);
+    font-family: var(--font);
+    word-break: keep-all;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+    padding: 10px 16px;
+    background: var(--chrome-panel);
+    border-bottom: 1px solid var(--chrome-border);
+  }
+  .toolbar h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  .seg { display: inline-flex; border: 1px solid var(--chrome-border); }
+  .seg button, .btn {
+    font: inherit; font-size: 14px;
+    padding: 6px 12px;
+    border: 0; border-right: 1px solid var(--chrome-border);
+    background: transparent; color: var(--chrome-text);
+    cursor: pointer;
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--chrome-active); color: var(--chrome-active-text); }
+  .btn { border: 1px solid var(--chrome-border); }
+  .seg button:focus-visible, .btn:focus-visible { outline: 2px solid var(--anno); outline-offset: 2px; }
+  .fontbar { flex-basis: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+  .fontbar[hidden] { display: none; }
+  .fontbar > span { font-size: 13px; color: var(--chrome-muted); }
+  .fontbar .seg { flex-wrap: wrap; }
+  .fontbar .seg button { font-size: 18px; line-height: 1.2; }
+  .desc { flex-basis: 100%; margin: 0; font-size: 13px; color: var(--chrome-muted); line-height: 1.5; }
+  .desc b { color: var(--chrome-text); }
+
+  /* ───────────── 무대: 실제 사이트 첫 화면 흉내 ───────────── */
+  .stage { position: relative; flex: 1; overflow: hidden; }
+
+  /* .site에는 z-index·transform·opacity를 주지 않는다.
+     시안 C에서 Hero 제목만 로더 위로 끌어올리려면 쌓임 맥락이 생기면 안 된다. */
+  .site {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+  .site-header {
+    display: flex; align-items: center; justify-content: space-between;
+    height: 57px; padding: 0 var(--gutter);
+    border-bottom: var(--line);
+    font-size: 14px; font-weight: 600;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-mark {
+    display: grid; place-items: center;
+    width: 24px; height: 24px;
+    background: var(--color-text); color: var(--color-bg);
+    font-size: 13px;
+  }
+  .site-nav { display: flex; gap: 20px; font-weight: 500; color: var(--color-text-muted); }
+  @media (max-width: 640px) { .site-nav { display: none; } }
+
+  .hero {
+    flex: 1;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    gap: 16px;
+    padding: var(--gutter);
+  }
+  .hero-label {
+    margin: 0;
+    font-size: var(--font-size-label);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  .hero-title {
+    position: relative;
+    margin: 0;
+    font-size: var(--font-size-display);
+    font-weight: 600;
+    line-height: 0.92;
+    letter-spacing: -0.04em;
+  }
+  .hero-title.is-lifted { z-index: 30; } /* 시안 C: 로더 위로 */
+  .hero-title .word { display: inline-block; white-space: nowrap; }
+  .hero-title .word:first-child { color: var(--color-accent); }
+  .mask { display: inline-block; overflow: hidden; padding-bottom: 0.06em; vertical-align: bottom; }
+  .ch { display: inline-block; }
+  .hero-tagline { margin: 0; font-size: clamp(18px, 1.6vw, 24px); line-height: 1.5; }
+  .hero-tagline span { display: inline-block; }
+
+  /* ───────────── 로더 공통 ───────────── */
+  .loader {
+    position: absolute; inset: 0; z-index: 20;
+    display: none;
+    font-size: var(--font-size-label);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+  .loader.is-on { display: block; }
+  .meta {
+    position: absolute;
+    display: flex; justify-content: space-between;
+    left: var(--gutter); right: var(--gutter);
+  }
+
+  /* A — 카운터 + 세로 셔터 */
+  #loaderA .cols { position: absolute; inset: 0; display: flex; }
+  #loaderA .col { flex: 1; height: 100%; margin-right: -1px; background: var(--color-text); }
+  #loaderA .meta { top: var(--gutter); color: var(--color-bg); opacity: 0.7; }
+  #loaderA .count-wrap {
+    position: absolute; left: var(--gutter); bottom: calc(var(--gutter) + 12px);
+    overflow: hidden; line-height: 0.85;
+  }
+  #loaderA .count {
+    display: block;
+    font-size: clamp(96px, 22vw, 320px);
+    font-weight: 600; letter-spacing: -0.05em;
+    color: var(--color-bg);
+    font-variant-numeric: tabular-nums;
+  }
+  #loaderA .bar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 4px; background: var(--color-accent-bg);
+    transform: scaleX(0); transform-origin: left;
+  }
+
+  /* B — 픽셀 Claw'd + 타일 흩어짐 */
+  #loaderB .tiles { position: absolute; inset: 0; display: grid; }
+  #loaderB .tile { background: var(--color-text); transform: scale(1.02); }
+  #loaderB .center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 28px;
+    color: var(--color-bg);
+  }
+  #loaderB .clawd {
+    --u: clamp(10px, 2.2vw, 18px);
+    display: grid;
+    grid-template-columns: repeat(12, var(--u));
+    grid-auto-rows: var(--u);
+  }
+  #loaderB .px { background: var(--color-mascot); }
+  #loaderB .pct { font-variant-numeric: tabular-nums; }
+
+  /* D — A의 카운터·셔터 + B의 픽셀 Claw'd */
+  #loaderD .cols { position: absolute; inset: 0; display: flex; }
+  #loaderD .col { flex: 1; height: 100%; margin-right: -1px; background: var(--color-text); }
+  #loaderD .meta { top: var(--gutter); color: var(--color-bg); opacity: 0.7; }
+  #loaderD .center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: clamp(24px, 3vw, 40px); /* Claw'd 바로 아래에 숫자 */
+  }
+  #loaderD .clawd {
+    --u: clamp(10px, 2.2vw, 18px);
+    display: grid;
+    grid-template-columns: repeat(12, var(--u));
+    grid-auto-rows: var(--u);
+  }
+  #loaderD .px { background: var(--color-mascot); }
+  #loaderD .count-wrap { overflow: hidden; line-height: 0.85; }
+  /* 폰트 버튼이 아래 --count-* 값을 바꾼다 */
+  #loaderD .count {
+    display: block;
+    font-family: var(--count-family, inherit);
+    font-size: calc(clamp(64px, 12vw, 180px) * var(--count-scale, 1));
+    font-weight: var(--count-weight, 600);
+    font-style: var(--count-style, normal);
+    letter-spacing: var(--count-ls, -0.05em);
+    color: var(--color-bg);
+    font-variant-numeric: tabular-nums;
+  }
+  #loaderD .bar {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 4px; background: var(--color-accent-bg);
+    transform: scaleX(0); transform-origin: left;
+  }
+
+  /* C — 오렌지 막 + 제목이 그대로 Hero로 이어짐 */
+  #loaderC .sheet {
+    position: absolute; inset: 0;
+    background: var(--color-accent-bg);
+    transform-origin: top;
+  }
+  #loaderC .meta { bottom: var(--gutter); color: var(--color-accent-contrast); }
+  #loaderC .meta.top { top: calc(57px + var(--gutter)); bottom: auto; }
+  #loaderC .line {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    height: 1px; background: var(--color-accent-contrast);
+    transform: scaleX(0); transform-origin: left;
+  }
+  #loaderC .pct { font-variant-numeric: tabular-nums; }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <h1>로딩 화면 시안</h1>
+  <div class="seg" role="group" aria-label="시안 선택">
+    <button type="button" data-v="A" aria-pressed="false">A 카운터 셔터</button>
+    <button type="button" data-v="B" aria-pressed="false">B 픽셀 Claw'd</button>
+    <button type="button" data-v="C" aria-pressed="false">C 이어지는 제목</button>
+    <button type="button" data-v="D" aria-pressed="true">D 카운터 + Claw'd</button>
+  </div>
+  <button type="button" class="btn" id="replay">↻ 다시 보기</button>
+  <button type="button" class="btn" id="theme">라이트/다크</button>
+  <div class="fontbar" id="fontbar">
+    <span>D 숫자 폰트</span>
+    <div class="seg" role="group" aria-label="숫자 폰트 선택" id="fontSeg"></div>
+  </div>
+  <p class="desc" id="desc"></p>
+</div>
+
+<div class="stage">
+  <!-- 실제 사이트 첫 화면(Header + Hero) 흉내 -->
+  <div class="site">
+    <header class="site-header">
+      <span class="logo"><span class="logo-mark">P</span>Portfolio</span>
+      <nav class="site-nav"><span>About</span><span>Skills</span><span>Projects</span><span>Contact</span></nav>
+    </header>
+    <section class="hero">
+      <p class="hero-label">TODO 이름 · Frontend Developer</p>
+      <h1 class="hero-title" id="heroTitle">2027 PORTFOLIO</h1>
+      <p class="hero-tagline"><span>디자인의 의도를 이해하고,</span> <span>코드로 끝까지 구현합니다.</span></p>
+    </section>
+  </div>
+
+  <!-- A -->
+  <div class="loader" id="loaderA" role="status">
+    <span class="sr-only">페이지를 불러오는 중입니다</span>
+    <div class="cols" aria-hidden="true"></div>
+    <div class="meta" aria-hidden="true"><span>Loading</span><span>2027 Portfolio</span></div>
+    <div class="count-wrap" aria-hidden="true"><span class="count">000</span></div>
+    <div class="bar" aria-hidden="true"></div>
+  </div>
+
+  <!-- B -->
+  <div class="loader" id="loaderB" role="status">
+    <span class="sr-only">페이지를 불러오는 중입니다</span>
+    <div class="tiles" aria-hidden="true"></div>
+    <div class="center" aria-hidden="true">
+      <div class="clawd"></div>
+      <span class="pct">Loading 000%</span>
+    </div>
+  </div>
+
+  <!-- D (A + B) -->
+  <div class="loader" id="loaderD" role="status">
+    <span class="sr-only">페이지를 불러오는 중입니다</span>
+    <div class="cols" aria-hidden="true"></div>
+    <div class="meta" aria-hidden="true"><span>Loading</span><span>2027 Portfolio</span></div>
+    <div class="center" aria-hidden="true">
+      <div class="clawd"></div>
+      <div class="count-wrap"><span class="count">000</span></div>
+    </div>
+    <div class="bar" aria-hidden="true"></div>
+  </div>
+
+  <!-- C -->
+  <div class="loader" id="loaderC" role="status">
+    <span class="sr-only">페이지를 불러오는 중입니다</span>
+    <div class="sheet" aria-hidden="true">
+      <div class="meta top"><span>Portfolio</span><span>Frontend Developer</span></div>
+      <div class="meta"><span>Loading</span><span class="pct">000</span></div>
+      <div class="line"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pad3 = (n) => String(Math.round(n)).padStart(3, '0');
+
+  const DESC = {
+    A: '<b>A 카운터 셔터</b> — 검은 화면에 큰 숫자가 000→100까지 오르고, 아래 오렌지 줄이 채워집니다. 다 차면 숫자가 위로 빠지고 세로 기둥 6개가 차례로 올라가며 Hero가 드러납니다. 그리드·흑백 맞바꾸기 콘셉트와 가장 잘 맞습니다.',
+    B: '<b>B 픽셀 Claw\'d</b> — 흩어진 픽셀이 모여 Claw\'d가 되고 두 번 뛰어오른 뒤 다시 흩어집니다. 이어서 화면을 덮은 검은 타일이 가운데부터 사라집니다. Hero의 3D Claw\'d를 미리 소개하는 장난스러운 안입니다.',
+    C: '<b>C 이어지는 제목</b> — 오렌지 화면에서 "2027 PORTFOLIO" 글자가 하나씩 솟아오르고, 오렌지 막이 위로 걷히면 그 제목이 그대로 Hero 제목이 됩니다. 로딩과 첫 화면이 끊기지 않아 가장 매끄럽습니다.',
+    D: '<b>D 카운터 + Claw\'d</b> — A와 B를 합친 안입니다. 검은 화면 가운데에서 흩어진 픽셀이 모여 Claw\'d가 되는 동안, 왼쪽 아래 큰 숫자가 000→100까지 오르고 오렌지 줄이 차오릅니다. 다 차면 Claw\'d가 뛰어오른 뒤 흩어지고, 숫자가 위로 빠지면서 세로 기둥 6개가 차례로 올라가 Hero가 드러납니다.',
+  };
+
+  // ── 제목을 글자 단위로 쪼갠다 (각 글자를 .mask 안에 넣어 아래에서 솟게) ──
+  const heroTitle = $('#heroTitle');
+  heroTitle.setAttribute('aria-label', heroTitle.textContent);
+  heroTitle.innerHTML = heroTitle.textContent.split(' ').map((w) =>
+    `<span class="word" aria-hidden="true">${[...w].map((c) =>
+      `<span class="mask"><span class="ch">${c}</span></span>`).join('')}</span>`
+  ).join(' ');
+  const chars = $$('.ch', heroTitle);
+  const label = $('.hero-label');
+  const taglineParts = $$('.hero-tagline span');
+  const header = $('.site-header');
+
+  // ── A: 세로 기둥 ──
+  $$('#loaderA .cols, #loaderD .cols').forEach((el) => {
+    el.innerHTML = '<div class="col"></div>'.repeat(6);
+  });
+
+  // ── B: Claw'd 픽셀 (X = 몸, 나머지 = 빈칸) ──
+  const CLAWD = [
+    '..XXXXXXXX..',
+    '..X.XXXX.X..',
+    '..X.XXXX.X..',
+    'XXXXXXXXXXXX',
+    'XXXXXXXXXXXX',
+    '..XXXXXXXX..',
+    '..X.X..X.X..',
+    '..X.X..X.X..',
+  ];
+  $$('.clawd').forEach((el) => {
+    el.innerHTML = CLAWD.join('').split('').map((c) =>
+      c === 'X' ? '<i class="px"></i>' : '<i></i>').join('');
+  });
+  const pixels = $$('#loaderB .px');
+  const pixelsD = $$('#loaderD .px');
+
+  // B: 화면 크기에 맞춰 타일 격자를 만든다
+  const tilesEl = $('#loaderB .tiles');
+  let grid = [1, 1];
+  function buildTiles() {
+    const { width, height } = $('.stage').getBoundingClientRect();
+    const cols = Math.max(4, Math.round(width / 90));
+    const rows = Math.max(4, Math.round(height / 90));
+    grid = [rows, cols];
+    tilesEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    tilesEl.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    tilesEl.innerHTML = '<div class="tile"></div>'.repeat(rows * cols);
+  }
+
+  // ── 가짜 진행률: 실제로는 폰트·이미지 로드에 맞춰 움직이게 된다 ──
+  function fakeProgress(onUpdate) {
+    const o = { v: 0 };
+    const tl = gsap.timeline();
+    [[24, 0.5], [41, 0.35], [67, 0.6], [88, 0.45], [100, 0.4]].forEach(([to, d]) => {
+      tl.to(o, { v: to, duration: d, ease: 'power2.out', onUpdate: () => onUpdate(o.v) });
+    });
+    return tl;
+  }
+
+  // ── 로딩이 끝난 뒤 Hero가 들어오는 공통 모션 ──
+  function heroIn(withTitle = true) {
+    const tl = gsap.timeline();
+    if (withTitle) {
+      tl.from(chars, { yPercent: 110, duration: 0.9, ease: 'expo.out', stagger: 0.04 });
+    }
+    tl.from(header, { y: -20, autoAlpha: 0, duration: 0.6, ease: 'power3.out' }, withTitle ? 0.1 : 0)
+      .from(label, { y: 16, autoAlpha: 0, duration: 0.6, ease: 'power3.out' }, '<0.1')
+      .from(taglineParts, { y: 20, autoAlpha: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 }, '<0.1');
+    return tl;
+  }
+
+  // ── 시안별 타임라인 ──
+  const build = {
+    A() {
+      const L = $('#loaderA');
+      const count = $('.count', L);
+      const bar = $('.bar', L);
+      return gsap.timeline()
+        .call(() => L.classList.add('is-on'))
+        .from(count, { yPercent: 100, duration: 0.6, ease: 'power3.out' })
+        .add(fakeProgress((v) => {
+          count.textContent = pad3(v);
+          gsap.set(bar, { scaleX: v / 100 });
+        }), '-=0.3')
+        .to(count, { yPercent: -105, duration: 0.5, ease: 'power3.in' }, '+=0.15')
+        .to([$('.meta', L), bar], { autoAlpha: 0, duration: 0.3 }, '<')
+        .to($$('.col', L), { yPercent: -100, duration: 0.9, ease: 'expo.inOut', stagger: 0.06 }, '-=0.1')
+        .add(heroIn(), '-=0.55')
+        .call(() => L.classList.remove('is-on'));
+    },
+
+    B() {
+      const L = $('#loaderB');
+      const clawd = $('.clawd', L);
+      const pct = $('.pct', L);
+      buildTiles();
+      const tiles = $$('.tile', L);
+      return gsap.timeline()
+        .call(() => L.classList.add('is-on'))
+        .from(pixels, {
+          x: () => gsap.utils.random(-320, 320),
+          y: () => gsap.utils.random(-240, 240),
+          rotation: () => gsap.utils.random(-180, 180),
+          scale: 0, autoAlpha: 0,
+          duration: 0.9, ease: 'back.out(1.6)',
+          stagger: { each: 0.025, from: 'random' },
+        })
+        .add(fakeProgress((v) => { pct.textContent = `Loading ${pad3(v)}%`; }), 0)
+        .to(clawd, { y: -22, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 3 }, '-=0.2')
+        .to(pixels, {
+          x: () => gsap.utils.random(-400, 400),
+          y: () => gsap.utils.random(-300, 300),
+          rotation: () => gsap.utils.random(-180, 180),
+          scale: 0, duration: 0.6, ease: 'power3.in',
+          stagger: { each: 0.008, from: 'random' },
+        }, '+=0.1')
+        .to(pct, { autoAlpha: 0, duration: 0.2 }, '<')
+        .to(tiles, {
+          scale: 0, duration: 0.5, ease: 'power2.in',
+          stagger: { grid, from: 'center', amount: 0.6 },
+        }, '-=0.25')
+        .add(heroIn(), '-=0.45')
+        .call(() => L.classList.remove('is-on'));
+    },
+
+    D() {
+      const L = $('#loaderD');
+      const count = $('.count', L);
+      const bar = $('.bar', L);
+      const clawd = $('.clawd', L);
+      return gsap.timeline()
+        .call(() => L.classList.add('is-on'))
+        .from(count, { yPercent: 100, duration: 0.6, ease: 'power3.out' })
+        // 픽셀이 모이는 것과 숫자가 오르는 것이 동시에 진행된다
+        .from(pixelsD, {
+          x: () => gsap.utils.random(-320, 320),
+          y: () => gsap.utils.random(-240, 240),
+          rotation: () => gsap.utils.random(-180, 180),
+          scale: 0, autoAlpha: 0,
+          duration: 0.9, ease: 'back.out(1.6)',
+          stagger: { each: 0.025, from: 'random' },
+        }, 0.1)
+        .add(fakeProgress((v) => {
+          count.textContent = pad3(v);
+          gsap.set(bar, { scaleX: v / 100 });
+        }), 0.3)
+        // 100% — Claw'd가 두 번 뛰고
+        .to(clawd, { y: -22, duration: 0.18, ease: 'power2.out', yoyo: true, repeat: 3 })
+        // 픽셀이 흩어지면서 숫자는 위로 빠진다
+        .to(pixelsD, {
+          x: () => gsap.utils.random(-400, 400),
+          y: () => gsap.utils.random(-300, 300),
+          rotation: () => gsap.utils.random(-180, 180),
+          scale: 0, duration: 0.6, ease: 'power3.in',
+          stagger: { each: 0.008, from: 'random' },
+        }, '+=0.05')
+        .to(count, { yPercent: -105, duration: 0.5, ease: 'power3.in' }, '<0.1')
+        .to([$('.meta', L), bar], { autoAlpha: 0, duration: 0.3 }, '<')
+        // 세로 기둥이 차례로 올라가며 Hero 등장
+        .to($$('.col', L), { yPercent: -100, duration: 0.9, ease: 'expo.inOut', stagger: 0.06 }, '-=0.15')
+        .add(heroIn(), '-=0.55')
+        .call(() => L.classList.remove('is-on'));
+    },
+
+    C() {
+      const L = $('#loaderC');
+      const sheet = $('.sheet', L);
+      const pct = $('.pct', L);
+      const line = $('.line', L);
+      const cs = getComputedStyle(document.documentElement);
+      const onSheet = cs.getPropertyValue('--color-accent-contrast').trim();
+      const textColor = cs.getPropertyValue('--color-text').trim();
+      const accent = cs.getPropertyValue('--color-accent').trim();
+      const words = $$('.word', heroTitle);
+      return gsap.timeline()
+        .call(() => L.classList.add('is-on'))
+        .call(() => heroTitle.classList.add('is-lifted'))
+        .set(words, { color: onSheet })
+        .set([label, taglineParts, header], { autoAlpha: 0 })
+        .from(chars, { yPercent: 110, duration: 0.9, ease: 'expo.out', stagger: 0.07 }, 0.2)
+        .add(fakeProgress((v) => {
+          pct.textContent = pad3(v);
+          gsap.set(line, { scaleX: v / 100 });
+        }), 0)
+        .to($$('.meta', L), { autoAlpha: 0, duration: 0.3 }, '+=0.15')
+        .to(sheet, { scaleY: 0, duration: 1, ease: 'expo.inOut' })
+        .to(words[0], { color: accent, duration: 0.6 }, '<0.3')
+        .to(words.slice(1), { color: textColor, duration: 0.6 }, '<')
+        .to(header, { autoAlpha: 1, duration: 0.01 }, '<')
+        .from(header, { y: -20, duration: 0.6, ease: 'power3.out' }, '<')
+        .to(label, { autoAlpha: 1, duration: 0.01 }, '<0.1')
+        .from(label, { y: 16, duration: 0.6, ease: 'power3.out' }, '<')
+        .to(taglineParts, { autoAlpha: 1, duration: 0.01, stagger: 0.1 }, '<0.1')
+        .from(taglineParts, { y: 20, duration: 0.7, ease: 'power3.out', stagger: 0.1 }, '<')
+        .call(() => heroTitle.classList.remove('is-lifted'))
+        .set(words, { clearProps: 'color' })
+        .call(() => L.classList.remove('is-on'));
+    },
+  };
+
+  // ── 재생 / 초기화 ──
+  let current = 'D';
+  let tl = null;
+  const animated = () => [
+    ...chars, label, ...taglineParts, header, heroTitle, ...$$('.word', heroTitle),
+    ...$$('.loader *'), ...$$('.loader'),
+  ];
+
+  function play() {
+    if (tl) tl.kill();
+    gsap.set(animated(), { clearProps: 'all' });
+    applyFont(); // clearProps가 지운 폰트 설정을 다시 넣는다
+    $$('.loader').forEach((l) => (l.className = 'loader'));
+    heroTitle.className = 'hero-title';
+    $('#fontbar').hidden = current !== 'D';
+    $('#desc').innerHTML = DESC[current] + (current === 'D' ? ` <b>숫자 폰트: ${font.name}</b> — ${font.note}` : '') +
+      (reduce ? ' <b>(모션 줄이기 설정이 켜져 있어 짧게 사라지기만 합니다)</b>' : '');
+
+    if (reduce) {
+      // 모션 줄이기: 로더를 잠깐 보여 준 뒤 부드럽게 사라지게만
+      const L = $('#loader' + current);
+      tl = gsap.timeline()
+        .call(() => L.classList.add('is-on'))
+        .to(L, { autoAlpha: 0, duration: 0.3, delay: 0.6 })
+        .call(() => L.classList.remove('is-on'));
+      return;
+    }
+    tl = build[current]();
+  }
+
+  $$('.seg button').forEach((b) => b.addEventListener('click', () => {
+    current = b.dataset.v;
+    $$('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    play();
+  }));
+  $('#replay').addEventListener('click', play);
+  $('#theme').addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark = root.dataset.theme
+      ? root.dataset.theme === 'dark'
+      : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = isDark ? 'light' : 'dark';
+    play();
+  });
+
+  // ── D 숫자 폰트 후보 ──
+  // scale: 폰트마다 글자 크기 느낌이 달라 눈으로 비슷하게 맞춘 배율
+  const FONTS = [
+    { name: '기본 (Pretendard)', family: 'inherit', weight: 600, ls: '-0.05em', note: '지금 사이트 본문 폰트. 웹폰트 추가가 없어 가장 가볍습니다.' },
+    { name: 'Space Grotesk', family: "'Space Grotesk'", weight: 700, ls: '-0.04em', note: '살짝 기계적인 그로테스크. 깔끔하면서 개성이 조금 더 있습니다.' },
+    { name: 'JetBrains Mono', family: "'JetBrains Mono'", weight: 800, ls: '-0.02em', scale: 0.9, note: '개발자 코드 폰트. 숫자 폭이 같아 카운트할 때 흔들림이 없습니다.' },
+    { name: 'Bebas Neue', family: "'Bebas Neue'", weight: 400, ls: '0', scale: 1.3, note: '좁고 키가 큰 포스터 글씨. 숫자가 기둥처럼 서 보입니다.' },
+    { name: 'Archivo Black', family: "'Archivo Black'", weight: 400, ls: '-0.03em', note: '아주 굵고 넓은 글씨. 브루탈리즘 느낌이 가장 강합니다.' },
+    { name: 'Instrument Serif', family: "'Instrument Serif'", weight: 400, style: 'italic', ls: '-0.02em', scale: 1.25, note: '가는 세리프 이탤릭. 검은 화면에서 잡지처럼 우아한 대비를 줍니다.' },
+    { name: 'Silkscreen', family: "'Silkscreen'", weight: 700, ls: '0', scale: 0.75, note: '픽셀 글씨. 픽셀 Claw\'d와 짝이 가장 잘 맞습니다.' },
+    { name: 'Unbounded', family: "'Unbounded'", weight: 800, ls: '-0.03em', scale: 0.85, note: '둥글고 넓은 디스플레이 글씨. 장난스럽고 현대적입니다.' },
+  ];
+  let font = FONTS[0];
+  const fontSeg = $('#fontSeg');
+  fontSeg.innerHTML = FONTS.map((f, i) =>
+    `<button type="button" data-i="${i}" aria-pressed="${i === 0}" title="${f.name}"
+      style="font-family:${f.family === 'inherit' ? 'inherit' : f.family};font-weight:${f.weight};font-style:${f.style || 'normal'}">
+      ${i + 1}. 042</button>`).join('');
+
+  function applyFont() {
+    const s = $('#loaderD .count').style;
+    if (font.family === 'inherit') s.removeProperty('--count-family');
+    else s.setProperty('--count-family', font.family);
+    s.setProperty('--count-weight', font.weight);
+    s.setProperty('--count-style', font.style || 'normal');
+    s.setProperty('--count-ls', font.ls);
+    s.setProperty('--count-scale', font.scale || 1);
+  }
+  $$('button', fontSeg).forEach((b) => b.addEventListener('click', async () => {
+    font = FONTS[b.dataset.i];
+    $$('button', fontSeg).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    applyFont();
+    // 폰트 파일이 다 받아진 뒤에 재생해야 중간에 글꼴이 바뀌지 않는다
+    if (font.family !== 'inherit') {
+      try { await document.fonts.load(`${font.style || 'normal'} ${font.weight} 100px ${font.family}`); } catch {}
+    }
+    play();
+  }));
+
+  play();
+})();
+</script>
+</body>
+</html>

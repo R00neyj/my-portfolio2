@@ -31,6 +31,11 @@ body {
     color var(--duration-theme) var(--ease-out-soft);
 }
 
+/* 로딩 화면이 떠 있는 동안 스크롤 잠금 — data-loading은 index.html이 붙이고 Loader가 뗀다 */
+html[data-loading] {
+  overflow: hidden;
+}
+
 #root {
   display: flex;
   flex-direction: column;

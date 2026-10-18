@@ -24,9 +24,10 @@
 - 진입점: `index.html` → `src/main.tsx`가 `src/App.tsx`의 `<App />`을 `StrictMode` 안에서 `#root`에 마운트합니다. `index.html`의 인라인 스크립트가 렌더 전에 저장된 다크 모드 값을 적용해 FOUC를 막습니다(FR-X2).
 - `src/App.tsx`는 skip link + `<Header>` + `<main>`(Hero~Contact) + `<Footer>`로 이뤄진 페이지 셸만 담당하며, 자체 스타일은 없습니다.
 - **디자인 토큰**: `src/styles/tokens.css`에 컬러(라이트/다크)·타이포·간격·radius·shadow 커스텀 프로퍼티를 전역 정의합니다(§7 DS2~DS4, DS9). `src/styles/shared.module.css`는 섹션 공통 컨테이너/헤딩 클래스를 제공합니다. `src/index.css`는 리셋, 포커스 링, skip-link, `prefers-reduced-motion` 처리를 담당합니다. 컴포넌트 CSS에서 색상·radius·shadow 값을 하드코딩하지 말고 토큰만 참조하세요(DS6).
-- **컴포넌트**: `src/components/<Name>/<Name>.tsx` + `<Name>.module.css` 쌍으로 구성합니다(NFR-M4). 현재 Header, ThemeToggle, Hero, About, Skills, Projects, Education, Contact, Footer가 있습니다.
+- **컴포넌트**: `src/components/<Name>/<Name>.tsx` + `<Name>.module.css` 쌍으로 구성합니다(NFR-M4). 현재 Loader, Header, ThemeToggle, Hero, About, Skills, Projects, Education, Contact, Footer가 있습니다.
 - **콘텐츠 데이터**: `src/data/{types,skills,projects,education,links}.ts`에 있습니다(§6). 프로젝트/스킬/학력/링크를 추가·수정할 때는 해당 컴포넌트가 아니라 이 데이터 파일을 고칩니다(S4).
 - **훅**: `src/hooks/useTheme.ts`(다크 모드 토글 + localStorage), `src/hooks/useActiveSection.ts`(스크롤 스파이 내비게이션 하이라이트, §3.3).
+- **로딩 화면**: `src/components/Loader`가 GSAP로 그린다(시안: `docs/wireframe/loading.html`의 D). `index.html` 인라인 스크립트가 렌더 전에 `<html data-loading>`을 붙여 Hero 등장 모션을 멈추고 스크롤을 잠그며, Loader가 끝날 때 떼어 낸다. 모션 줄이기 환경에서는 붙이지 않아 로더가 뜨지 않는다.
 - 아이콘은 `lucide-react`를 사용합니다(DS10). 주의: 이 패키지에는 브랜드 로고 아이콘(GitHub 등)이 없으므로 외부 링크에는 `ExternalLink`처럼 의미가 맞는 일반 아이콘을 씁니다.
 - 그대로 서빙되는 정적 자산은 `public/`에 있습니다 (예: `/favicon.svg`처럼 절대 경로로 참조). 컴포넌트에서 import되어 Vite가 처리/해싱하는 자산은 `src/assets/`에 있습니다.
 - TypeScript 프로젝트는 참조(references)로 분리되어 있습니다: `tsconfig.app.json`은 `src/`를 담당(bundler 방식 모듈 해석, `noEmit`, React JSX), `tsconfig.node.json`은 `vite.config.ts`를 담당(Node 환경). `tsconfig.json`은 이 둘을 가리키는 루트 파일입니다.

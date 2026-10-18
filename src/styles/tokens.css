@@ -32,6 +32,8 @@
   --font-family-base: 'Pretendard Variable', Pretendard, -apple-system,
     BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI',
     sans-serif;
+  /* 로딩 화면 숫자 카운터 전용 픽셀 폰트 (@fontsource/silkscreen, 라틴 700) */
+  --font-family-pixel: 'Silkscreen', ui-monospace, monospace;
   --font-size-display: clamp(48px, 12vw, 160px); /* Hero 큰 제목 */
   --font-size-h2: clamp(36px, 4.4vw, 88px); /* 섹션 제목 */
   --font-size-h3: clamp(22px, 1.7vw, 32px); /* 카드 제목 */
@@ -68,6 +70,8 @@
   --container-max: var(--page-max); /* 호환용 — 1200px 상자는 더 쓰지 않는다 */
   /* 헤더 실측 높이: 칸 56px + 아래 선 1px */
   --header-h: 57px;
+  /* 쌓임 순서 — 로딩 화면은 헤더(20)·skip link(100)보다 위 */
+  --z-loader: 1000;
 
   /* §9 — 모션 */
   --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);

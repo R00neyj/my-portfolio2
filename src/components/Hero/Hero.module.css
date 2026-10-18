@@ -132,6 +132,13 @@
   .scrollCue svg {
     animation: cue 1.6s ease-in-out infinite;
   }
+
+  /* 로딩 화면이 걷힐 때까지 등장 모션을 첫 장면에 멈춰 둔다 */
+  :global(html[data-loading]) .label,
+  :global(html[data-loading]) .title,
+  :global(html[data-loading]) .tagline {
+    animation-play-state: paused;
+  }
 }
 
 @keyframes reveal {
