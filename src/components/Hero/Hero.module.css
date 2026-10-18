@@ -97,41 +97,67 @@
   outline-offset: 4px;
 }
 
+/* 등장이 끝난 뒤(Hero.tsx가 data-cue를 붙임)부터 화살표가 반복해서 움직인다 */
 @media (prefers-reduced-motion: no-preference) {
-  .label,
-  .title,
-  .tagline {
-    animation: reveal var(--motion-slow) both;
-  }
-
-  .title {
-    animation-delay: 80ms;
-  }
-
-  .tagline {
-    animation-delay: 140ms;
-  }
-
-  .scrollCue svg {
+  .scrollCue[data-cue='on'] svg {
     animation: cue 1.6s ease-in-out infinite;
-  }
-
-  /* 로딩 화면이 걷힐 때까지 등장 모션을 첫 장면에 멈춰 둔다 */
-  :global(html[data-loading]) .label,
-  :global(html[data-loading]) .title,
-  :global(html[data-loading]) .tagline {
-    animation-play-state: paused;
   }
 }
 
-@keyframes reveal {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+/* 스크롤 인사 말풍선 (§2.2) — 평소엔 숨겨 두고 GSAP이 보이게 한다. 장식이라 JS가 없으면 안 보여도 된다 */
+.greeting {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--gutter);
+  z-index: 2;
+  display: grid;
+  padding: var(--space-2) var(--space-4);
+  border: var(--line-strong);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+/* 꼬리: Claw'd 쪽(오른쪽 아래)을 가리키는 작은 사선 */
+.greeting::after {
+  content: '';
+  position: absolute;
+  right: var(--space-4);
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  border-right: var(--line-strong);
+  border-bottom: var(--line-strong);
+  background: var(--color-bg);
+  transform: rotate(45deg);
+}
+
+/* 두 문구를 같은 칸에 겹쳐 두고 yPercent로 교체한다 */
+.greetingText {
+  display: grid;
+  overflow: hidden;
+}
+
+.greetingLine {
+  grid-area: 1 / 1;
+}
+
+@media (min-width: 1024px) {
+  .greeting {
+    top: 14%;
+    right: 44%;
+    left: auto;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+}
+
+/* 모션 줄이기에서는 말풍선 없이 정지 자세만 보여 준다 */
+@media (prefers-reduced-motion: reduce) {
+  .greeting {
+    display: none;
   }
 }
 

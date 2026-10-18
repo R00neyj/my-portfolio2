@@ -47,6 +47,17 @@
   letter-spacing: 0.04em;
 }
 
+/* 상태 문구의 숫자 — 바뀔 때 아래에서 올라오도록 가리는 틀 */
+.statusMask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+}
+
+.statusNum {
+  display: inline-block;
+}
+
 /* ───── 카드 목록 — 3분할 + 계단 ───── */
 .list {
   list-style: none;
@@ -58,11 +69,19 @@
   align-items: start;
 }
 
-.list > li:nth-child(3n + 1) {
+/*
+ * 숨긴(hidden) 카드도 nth-child에 세어지므로, 보이는 카드 기준 순서를
+ * Projects.tsx가 data-col(0·1·2)과 data-odd로 붙여 준다.
+ */
+.list > li[hidden] {
+  display: none;
+}
+
+.list > li[data-col='0'] {
   margin-top: calc(var(--step) * 2);
 }
 
-.list > li:nth-child(3n + 2) {
+.list > li[data-col='1'] {
   margin-top: var(--step);
 }
 
@@ -72,11 +91,11 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .list > li:nth-child(n) {
+  .list > li[data-col] {
     margin-top: 0;
   }
 
-  .list > li:nth-child(even) {
+  .list > li[data-odd='true'] {
     margin-top: calc(var(--step) * 2);
   }
 }
@@ -88,17 +107,23 @@
     gap: var(--space-7);
   }
 
-  .list > li:nth-child(n) {
+  .list > li[data-col],
+  .list > li[data-odd='true'] {
     margin-top: 0;
   }
 
-  .list > li:nth-child(3n + 1) {
+  .list > li[data-col='0'] {
     margin-left: calc(var(--step) * 2);
   }
 
-  .list > li:nth-child(3n + 2) {
+  .list > li[data-col='1'] {
     margin-left: var(--step);
   }
+}
+
+/* 패럴랙스 y를 맡는 래퍼 — li(Flip)·article(등장)과 transform이 겹치지 않게 나눈다 */
+.stair {
+  display: block;
 }
 
 /* ───── 카드 ───── */

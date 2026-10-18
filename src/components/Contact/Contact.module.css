@@ -10,15 +10,26 @@
 }
 
 .dim {
+  display: inline-block;
   color: var(--color-border);
+  transition: color var(--duration-slow) var(--ease-out-expo);
+}
+
+/* 등장 모션 중 "함께"가 포인트 색으로 바뀐다 */
+.dimOn {
+  color: var(--color-accent);
+}
+
+.magnet {
+  display: block;
 }
 
 /* 화면 폭에 맞춘 큰 이메일 링크 */
 .mail {
+  position: relative;
   display: block;
   padding: 24px 0;
   border-top: var(--line-strong);
-  border-bottom: var(--line-strong);
   color: var(--color-text);
   font-size: clamp(32px, 8.4vw, 160px);
   font-weight: 600;
@@ -31,8 +42,20 @@
     padding var(--duration-slow) var(--ease-out-expo);
 }
 
+.mailText {
+  display: block;
+}
+
 .arrow {
+  display: inline-block;
   color: var(--color-accent);
+}
+
+/* 메일 링크 아래쪽 선 — 따로 떼어 둬야 왼→오로 그어지는 모션을 줄 수 있다 */
+.rule {
+  position: absolute;
+  inset: auto 0 0;
+  border-bottom: var(--line-strong);
 }
 
 @media (hover: hover) {
@@ -81,6 +104,18 @@
   background-color: transparent;
   font-family: inherit;
   cursor: pointer;
+}
+
+/* 복사 버튼 글자 교체 칸 — 위아래로 넘치는 글자는 가린다 */
+.swap {
+  display: inline-grid;
+  padding-block: 0.2em;
+  margin-block: -0.2em;
+  overflow: hidden;
+}
+
+.face {
+  grid-area: 1 / 1;
 }
 
 .srOnly {

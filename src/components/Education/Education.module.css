@@ -9,7 +9,7 @@
   list-style: none;
 }
 
-/* 등장 모션은 li가, 테두리와 호버는 안쪽 card가 맡는다 */
+/* 테두리와 호버는 안쪽 card가 맡는다 (등장 때 테두리 선은 .frame이 자란다) */
 .item {
   width: calc(100% - var(--step));
 }
@@ -22,17 +22,27 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  position: relative;
   padding: var(--space-5);
+  transition: transform 250ms var(--ease-bounce);
+}
+
+/* 카드 테두리 — 따로 떼어 둬야 등장할 때 선이 자라는 모션을 줄 수 있다 */
+.frame {
+  position: absolute;
+  inset: 0;
   border: var(--line);
-  transition:
-    border-color 250ms,
-    transform 250ms var(--ease-bounce);
+  pointer-events: none;
+  transition: border-color 250ms;
 }
 
 @media (hover: hover) {
   .card:hover {
-    border-color: var(--color-border-strong);
     transform: rotate(-1.5deg);
+  }
+
+  .card:hover .frame {
+    border-color: var(--color-border-strong);
   }
 }
 

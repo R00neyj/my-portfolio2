@@ -1,3 +1,5 @@
+import { useEffect } from 'react'
+import { setupSmoothScroll } from './motion/smoothScroll'
 import Loader from './components/Loader/Loader'
 import Header from './components/Header/Header'
 import Hero from './components/Hero/Hero'
@@ -9,6 +11,9 @@ import Contact from './components/Contact/Contact'
 import Footer from './components/Footer/Footer'
 
 function App() {
+  // Lenis 스크롤 스무더 + 앵커 이동 (DESIGN.md §8.2)
+  useEffect(() => setupSmoothScroll(), [])
+
   return (
     <>
       <Loader />

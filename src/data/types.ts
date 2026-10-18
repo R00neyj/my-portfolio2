@@ -5,6 +5,8 @@ export interface Profile {
   role: string
   year: string
   tagline: string[]
+  /** 스크롤 인사 말풍선 문구 (첫 문구 → 두 번째 문구로 바뀐다) */
+  greeting: string[]
 }
 
 export interface SkillCategory {

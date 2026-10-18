@@ -8,4 +8,5 @@ export const profile: Profile = {
   year: '2027',
   // FR-H1b: 구절 단위로만 줄을 바꾸도록 나눠 둔다
   tagline: ['디자인의 의도를 이해하고,', '코드로 끝까지 구현합니다.'],
+  greeting: ['안녕하세요!', '반가워요 👋'],
 }

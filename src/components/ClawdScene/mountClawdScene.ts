@@ -19,6 +19,23 @@ const MAX_CANVAS_SIZE = 2560
 const JUMP_DURATION = 1.25 // 웅크리기 → 점프 → 착지 → 작은 되튐
 const SMILE_HOLD = 1.9 // 웃는 얼굴 유지 시간
 
+/**
+ * Hero 스크롤 인사 값 (모두 0~1). GSAP scrub 타임라인이 움직이고, pose()가 매 프레임 읽는다.
+ * 장면이 늦게 떠도 현재 진행률의 값이 바로 반영된다 (docs/MOTION.md §2.2).
+ */
+export interface Greet {
+  turn: number // 정면을 돌아봄
+  smile: number // ^ ^ 웃는 눈
+  raise: number // 오른팔 들어 올림
+  wave: number // 손 흔드는 세기 (흔들림 자체는 시간이 만든다)
+  hop: number // 작은 점프 높이
+}
+
+const RAISE_ANGLE = 1.75 // 팔을 든 각도(rad). 더 크면 팔이 몸통을 파고든다
+const RAISE_SHIFT = 0.35 // 든 팔이 몸통에 겹치지 않게 바깥으로 미는 거리
+const RAISE_LIFT = 0.55 // 든 팔이 올라가는 높이
+const HOP_HEIGHT = 1.3
+
 interface Jump {
   y: number // 높이
   stretch: number // +면 위아래로 늘어남, -면 눌림
@@ -85,7 +102,7 @@ function readTheme() {
  * canvas에 Claw'd 장면을 그리고, container(Hero 섹션)에서 포인터·클릭을 받는다.
  * 정리 함수를 돌려준다. WebGL을 쓸 수 없으면 아무것도 그리지 않는다 (Hero 텍스트는 그대로 보임).
  */
-export function mountClawdScene(canvas: HTMLCanvasElement, container: HTMLElement) {
+export function mountClawdScene(canvas: HTMLCanvasElement, container: HTMLElement, greet: Greet) {
   let renderer: THREE.WebGLRenderer
   try {
     renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power' })
@@ -194,7 +211,16 @@ export function mountClawdScene(canvas: HTMLCanvasElement, container: HTMLElemen
 
   part(geometry(new RoundedBoxGeometry(8, 5.6, 3.8, 5, 0.55)), bodyMaterial, 0, 1.05, 0)
   const armGeometry = geometry(new RoundedBoxGeometry(2.2, 2, 2.4, 4, 0.45))
-  const arms = [-1, 1].map((s) => part(armGeometry, bodyMaterial, s * 4.95, 0.85, 0))
+  // 팔은 어깨(몸통 쪽 가장자리)에 둔 빈 Group(관절) 안에 넣어, 관절이 돌면 어깨를 축으로 들린다
+  const arms = [-1, 1].map((s) => {
+    const joint = new THREE.Group()
+    joint.position.set(s * 3.85, 0.85, 0)
+    const arm = new THREE.Mesh(armGeometry, bodyMaterial)
+    arm.position.set(s * 1.1, 0, 0)
+    joint.add(arm)
+    crab.add(joint)
+    return joint
+  })
   const legGeometry = geometry(new RoundedBoxGeometry(0.9, 2.4, 1.8, 3, 0.3))
   const legs = [-2.75, -1.25, 1.25, 2.75].map((x) => part(legGeometry, bodyMaterial, x, -2.65, 0))
   const eyeGeometry = geometry(new RoundedBoxGeometry(1, 1, 0.44, 3, 0.12))
@@ -284,22 +310,31 @@ export function mountClawdScene(canvas: HTMLCanvasElement, container: HTMLElemen
     // 동작 줄이기 설정이면 튀어오르지 않고 웃기만 한다 (FR-X3)
     const r = nowSec() - reactStart
     const jump = still ? NO_JUMP : jumpAt(r)
-    const smile = smileAt(r)
+    const clickSmile = smileAt(r)
+    const smile = Math.max(clickSmile, greet.smile)
 
-    crab.rotation.y = -0.42 + Math.sin(t * 0.45) * 0.28 + px * 0.45
+    // 인사 중에는 정면으로 돌아보고(turn), 마우스 따라보기는 약해진다
+    const follow = 1 - greet.turn * 0.7
+    const baseY = -0.42 + Math.sin(t * 0.45) * 0.28 + px * 0.45 * follow
+    crab.rotation.y = THREE.MathUtils.lerp(baseY, 0, greet.turn)
     crab.rotation.x = 0.28 + Math.sin(t * 0.33) * 0.05 + py * 0.18
     // 클릭 전에는 r이 Infinity라 sin(r)이 NaN이 되므로 웃는 동안에만 계산한다
-    crab.rotation.z = !still && smile > 0 ? Math.sin(r * 9) * 0.06 * smile : 0
+    // 갸웃거림은 클릭 반응에만 쓴다 — 인사 웃음(greet.smile)으로 조건을 바꾸면 r이 Infinity일 때 몸이 사라진다
+    crab.rotation.z = !still && clickSmile > 0 ? Math.sin(r * 9) * 0.06 * clickSmile : 0
     const bob = Math.sin(t * 1.3) * 0.22
-    crab.position.y = bob + jump.y
-    shadow.scale.setScalar((1 - bob * 0.15) * (1 - jump.y * 0.1))
+    const hopY = still ? 0 : greet.hop * HOP_HEIGHT
+    crab.position.y = bob + jump.y + hopY
+    shadow.scale.setScalar((1 - bob * 0.15) * (1 - (jump.y + hopY) * 0.1))
 
     // 젤리처럼 살짝 눌렸다 늘어난다
     const squash = Math.sin(t * 2.6) * 0.018 + jump.stretch
     crab.scale.set(1 - squash * 0.6, 1 + squash, 1 - squash * 0.6)
 
+    // 왼팔은 기존 위아래 흔들림, 오른팔은 인사: 든 각도(raise) + 시간이 만드는 흔들림(wave)
     arms[0].position.y = 0.85 + Math.sin(t * 2) * 0.12 + jump.arm
-    arms[1].position.y = 0.85 - Math.sin(t * 2) * 0.12 + jump.arm
+    arms[1].position.y = 0.85 - Math.sin(t * 2) * 0.12 + jump.arm + greet.raise * RAISE_LIFT
+    arms[1].position.x = 3.85 + greet.raise * RAISE_SHIFT
+    arms[1].rotation.z = greet.raise * RAISE_ANGLE + Math.sin(t * 9) * 0.35 * greet.wave
     legs.forEach((leg, i) => {
       leg.position.y = -2.65 + Math.max(0, Math.sin(t * 3 + i * 1.7)) * 0.08
     })

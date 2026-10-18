@@ -58,6 +58,17 @@
   color: var(--color-accent);
 }
 
+/* 라벨이 바뀔 때 새 글자가 아래에서 올라오도록 바깥을 잘라 둔다 */
+.nowClip {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.nowText {
+  display: inline-block;
+}
+
 .toggleCell {
   justify-content: center;
   padding: 0 16px;
@@ -138,8 +149,9 @@
 }
 
 /* 큰 글자 메뉴 패널 — 헤더 바로 아래 화면을 덮는다 */
+/* 닫힌 패널은 visibility로 숨겨 화면·스크린리더·탭 순서에서 빠진다 (닫는 모션이 끝까지 보이도록 display 대신 사용) */
 .panel {
-  display: none;
+  visibility: hidden;
   position: absolute;
   top: 100%;
   left: 0;
@@ -153,7 +165,7 @@
 }
 
 .panelOpen {
-  display: block;
+  visibility: visible;
 }
 
 .panelList {

@@ -31,6 +31,20 @@ body {
     color var(--duration-theme) var(--ease-out-soft);
 }
 
+/* Lenis(DESIGN.md §8.2)가 켜지면 브라우저 부드러운 스크롤과 겹치지 않게 끈다 */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+html.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+html.lenis.lenis-stopped {
+  overflow: clip;
+}
+
 /* 로딩 화면이 떠 있는 동안 스크롤 잠금 — data-loading은 index.html이 붙이고 Loader가 뗀다 */
 html[data-loading] {
   overflow: hidden;

@@ -17,18 +17,18 @@
   color: var(--color-accent);
 }
 
-/* JS가 .painting을 붙였을 때만 연하게 시작한다 — 스크립트가 없으면 처음부터 진한 글자 */
-.painting .word {
-  color: var(--color-border);
-  transition: color var(--duration-slow) var(--ease-out-soft);
+/*
+ * --paint(0~1)를 GSAP이 스크롤에 맞춰 움직이고, 색은 여기서 섞는다
+ * 기본값이 1이라 스크립트가 없거나 모션 줄이기 환경이면 처음부터 다 칠해진 상태
+ */
+.word {
+  --paint: 1;
+  display: inline-block;
+  color: color-mix(in srgb, var(--color-text) calc(var(--paint) * 100%), var(--color-border));
 }
 
-.painting .word.on {
-  color: var(--color-text);
-}
-
-.painting .word.accent.on {
-  color: var(--color-accent);
+.word.accent {
+  color: color-mix(in srgb, var(--color-accent) calc(var(--paint) * 100%), var(--color-border));
 }
 
 /* ───── 아래 두 문단 ───── */
@@ -36,8 +36,6 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-6) var(--space-5);
-  padding-top: var(--space-5);
-  border-top: var(--line);
 }
 
 @media (min-width: 1024px) {
@@ -47,9 +45,21 @@
 }
 
 .note {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  padding-top: var(--space-5);
+}
+
+/* 위쪽 1px 선 — 별도 요소라 GSAP이 왼쪽부터 그어 낼 수 있다 */
+.rule {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-border);
 }
 
 .noteText {
